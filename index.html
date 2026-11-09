@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <meta name="robots" content="noindex, nofollow">
 <meta name="author" content="JHK">
-<title>연수 서명 | 김포한가람중학교</title>
+<title>한가람 연수 등록부 생성 프로그램</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2323408F'/%3E%3Cpath d='M12 40c6-10 10-16 13-14s-4 14 0 13 7-12 11-11-2 10 2 10 6-6 9-7' fill='none' stroke='%23fff' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M12 50h40' stroke='%23fff' stroke-opacity='.55' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -563,6 +563,222 @@ input[type="radio"], input[type="checkbox"] { accent-color: var(--pen); width: 1
 .links-sec .linkbox .input { flex-basis: 320px; }
 .links-sec .help .btn { margin-left: 4px; }
 .table-scroll { position: relative; }   /* 화면 읽기용 숨은 글자가 휴대폰 화면을 옆으로 밀지 않게 */
+
+/* ================================================================== */
+/* 이름표 (서비스 이름, 로고, 맨 위 띠)                                     */
+/* ================================================================== */
+.masthead { background: var(--pen-tint); color: var(--pen-dark); font-size: 13px; line-height: 1.4; }
+.masthead span { display: block; max-width: 1296px; margin: 0 auto; padding: 6px 28px; }
+.is-teacher .masthead span { max-width: 480px; padding: 6px 20px; }
+.logo { width: 28px; height: 28px; flex: none; display: block; }
+.a-brand { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+.a-brand .a-brand-name { font-size: 16px; font-weight: 700; color: var(--ink); margin: 0; letter-spacing: -0.01em; }
+.a-brand .a-brand-school { font-size: 13px; color: var(--pencil); font-weight: 500; margin: 0; padding-left: 10px; border-left: 1px solid var(--rule); }
+.a-role { font-size: 13px; font-weight: 700; color: var(--pen); background: var(--pen-tint); border-radius: 999px; padding: 5px 12px; margin-right: 6px; white-space: nowrap; }
+@media (max-width: 760px) {
+  .a-brand .a-brand-school { display: none; }
+  .a-brand .a-brand-name { font-size: 15px; }
+  .masthead span { padding: 6px 16px; }
+}
+.t-brand { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--pencil); }
+.t-brand .logo { width: 20px; height: 20px; }
+.a-h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+.a-h1-doc { font-weight: 600; letter-spacing: -0.01em; }
+.a-sub { font-size: 16px; }
+.a-simple { max-width: 640px; margin: 24px auto 0; }
+.btn-large { min-height: 52px; padding: 0 28px; font-size: 16px; }
+
+/* 바로가기를 연 직후 */
+.splash { min-height: 72vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; padding: 24px; }
+.splash .logo { width: 56px; height: 56px; margin-bottom: 8px; }
+.splash-name { font-size: 19px; font-weight: 700; letter-spacing: -0.01em; }
+.splash-text { font-size: 15px; color: var(--pencil); }
+.dots::after { content: '…'; animation: dots 1.2s steps(4, end) infinite; display: inline-block; width: 1em; text-align: left; overflow: hidden; vertical-align: bottom; }
+@keyframes dots { 0% { width: 0; } 100% { width: 1em; } }
+
+/* 처음 화면 */
+.a-main-wide { max-width: 1160px; }
+.welcome { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); gap: 56px; align-items: center; padding: 48px 0 28px; }
+.eyebrow { font-size: 14px; font-weight: 700; color: var(--pen); }
+.welcome-title { font-size: 42px; line-height: 1.22; font-weight: 800; letter-spacing: -0.03em; margin-top: 10px; }
+.welcome-lead { font-size: 17px; line-height: 1.65; color: var(--pencil); margin-top: 16px; max-width: 30em; }
+.flow { list-style: none; padding: 0; margin: 30px 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; counter-reset: step; }
+.flow li { background: var(--paper); border: 1px solid var(--rule-soft); border-radius: 12px; padding: 16px; counter-increment: step; display: flex; flex-direction: column; gap: 10px; }
+.flow .ic { width: 26px; height: 26px; color: var(--pen); flex: none; }
+.flow b { display: block; font-size: 15px; font-weight: 700; }
+.flow b::before { content: counter(step) ". "; color: var(--pen); }
+.flow span { display: block; font-size: 13px; color: var(--pencil); line-height: 1.5; margin-top: 2px; }
+.welcome-card { padding: 30px; }
+.welcome-card h2 { font-size: 19px; font-weight: 700; margin-bottom: 18px; letter-spacing: -0.01em; }
+.action { display: flex; align-items: center; gap: 14px; padding: 20px 22px; border-radius: 12px; border: 1px solid var(--rule); text-decoration: none; color: var(--ink); background: var(--paper); transition: border-color .15s, background-color .15s; }
+.action + .action { margin-top: 10px; }
+.action:hover { border-color: var(--pen); }
+.action-text { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.action-text b { font-size: 18px; font-weight: 700; }
+.action-text span { font-size: 14px; color: var(--pencil); }
+.action .ic { width: 22px; height: 22px; color: var(--pencil); flex: none; }
+.action-primary { background: var(--pen); border-color: var(--pen); color: #fff; }
+.action-primary:hover { background: var(--pen-dark); border-color: var(--pen-dark); }
+.action-primary .action-text span, .action-primary .ic { color: rgba(255, 255, 255, .85); }
+.welcome-note { font-size: 13px; color: var(--pencil); margin-top: 18px; line-height: 1.55; padding-top: 16px; border-top: 1px solid var(--rule-soft); }
+@media (max-width: 960px) {
+  .welcome { grid-template-columns: minmax(0, 1fr); gap: 28px; padding: 20px 0 8px; }
+  .welcome-title { font-size: 32px; }
+}
+@media (max-width: 600px) {
+  .flow { grid-template-columns: minmax(0, 1fr); gap: 8px; margin-top: 22px; }
+  .flow li { flex-direction: row; align-items: center; gap: 14px; padding: 12px 14px; }
+  .welcome-card { padding: 20px; }
+  .action { padding: 16px 18px; }
+}
+
+/* 이름 고르기 */
+.who-wrap { max-width: 900px; margin: 0 auto; }
+.who-card { padding: 34px 36px 38px; }
+.who-step { font-size: 14px; color: var(--pen); font-weight: 700; display: flex; gap: 8px; align-items: center; }
+.who-step .num { font-weight: 600; color: var(--pencil); background: var(--desk); border-radius: 999px; padding: 1px 9px; font-size: 12px; }
+.a-pagehead .who-step { margin-bottom: 4px; }
+.who-title { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.35; margin-top: 8px; }
+.who-lead { font-size: 16px; color: var(--pencil); margin-top: 8px; line-height: 1.6; }
+.who-label { font-size: 14px; font-weight: 700; color: var(--pencil); margin: 28px 0 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--rule); background: var(--paper); font-size: 15px; font-weight: 600; color: var(--ink); transition: border-color .15s, background-color .15s, color .15s; }
+.chip:hover { border-color: var(--pen); color: var(--pen); }
+.chip[aria-pressed="true"] { background: var(--pen); border-color: var(--pen); color: #fff; }
+.chip-name { font-size: 17px; min-width: 104px; min-height: 52px; }
+.chip-name span { font-size: 13px; color: var(--pencil); font-weight: 500; margin-left: 8px; }
+.chip.is-me { border-color: var(--pen); box-shadow: inset 0 0 0 1px var(--pen); }
+.chip.is-me span { color: var(--pen); }
+.who-names { margin-top: 28px; padding-top: 4px; border-top: 1px solid var(--rule-soft); scroll-margin-top: 12px; }
+.who-names-head { display: flex; align-items: center; gap: 12px; justify-content: space-between; margin: 20px 0 10px; }
+.who-names-head .who-label { margin: 0; }
+.who-search { display: flex; align-items: center; gap: 6px; border: 1px solid var(--rule); border-radius: 10px; padding: 0 10px; height: 40px; background: var(--paper); width: 220px; }
+.who-search .ic { width: 18px; height: 18px; color: var(--faint); flex: none; }
+.who-search input { border: 0; outline: 0; background: transparent; flex: 1; min-width: 0; font-size: 15px; height: 100%; }
+.who-search:focus-within { border-color: var(--pen); box-shadow: 0 0 0 3px var(--pen-tint); }
+.who-hint { font-size: 15px; color: var(--pencil); padding: 6px 0; }
+@media (max-width: 600px) {
+  .who-card { padding: 22px 18px 26px; }
+  .who-title { font-size: 22px; }
+  .who-search { width: 150px; }
+  .chip-name { min-width: 0; }
+}
+
+/* 연수가 없을 때 */
+.empty-first { padding: 44px 32px; text-align: center; }
+.empty-first h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+.empty-first > p { color: var(--pencil); margin-top: 8px; }
+.empty-first .flow { max-width: 780px; margin: 28px auto 30px; text-align: left; }
+@media (max-width: 600px) { .empty-first { padding: 28px 18px; } }
+.qr-poster .brand { display: flex; align-items: center; gap: 2.5mm; margin-top: 12mm; font-size: 11pt; font-weight: 700; color: #333; }
+.qr-poster .brand .logo { width: 7mm; height: 7mm; }
+.qr-stage .stage-brand { display: flex; align-items: center; gap: 10px; }
+.qr-stage .stage-brand .logo { width: clamp(22px, 2vw, 30px); height: clamp(22px, 2vw, 30px); }
+.masthead span { max-width: none; }
+.is-teacher .masthead span { max-width: 480px; }
+.flow span, .welcome-lead, .who-lead { text-wrap: pretty; }
+.a-pagehead .who-step .num { background: var(--paper); }
+.welcome { grid-template-areas: "intro card" "flow card"; row-gap: 0; }
+.welcome-intro { grid-area: intro; align-self: end; }
+.welcome-flow { grid-area: flow; align-self: start; }
+.welcome-card { grid-area: card; align-self: center; }
+@media (max-width: 960px) {
+  .welcome { grid-template-areas: "intro" "card" "flow"; row-gap: 24px; }
+  .welcome-flow .flow { margin-top: 0; }
+}
+
+/* ================================================================== */
+/* 묶음 QR (교사 화면)                                                    */
+/* ================================================================== */
+.t-cap { font-size: 13px; font-weight: 700; color: var(--pen); margin-top: 10px; }
+.t-titles { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; font-weight: 400; }
+.t-titles-item { display: flex; align-items: baseline; gap: 10px; justify-content: space-between; border-bottom: 1px solid var(--rule-soft); padding-bottom: 6px; }
+.t-titles-item .doc { font-size: 19px; line-height: 1.4; font-weight: 600; }
+.t-titles-item .num { font-size: 14px; color: var(--pencil); white-space: nowrap; font-family: var(--font-ui); }
+.t-person .dp.part { color: var(--pen); font-size: 14px; }
+.t-help { font-size: 15px; color: var(--pencil); margin: -8px 0 16px; line-height: 1.6; }
+.t-choose { display: flex; flex-direction: column; gap: 10px; }
+.t-opt { display: flex; align-items: center; gap: 14px; padding: 16px 16px; border: 1.5px solid var(--rule); border-radius: 14px; background: var(--paper); cursor: pointer; position: relative; }
+.t-opt input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.t-check { flex: none; width: 26px; height: 26px; border-radius: 8px; border: 2px solid var(--rule); background: var(--paper); position: relative; }
+.t-opt input:checked ~ .t-check { background: var(--pen); border-color: var(--pen); }
+.t-opt input:checked ~ .t-check::after { content: ''; position: absolute; left: 8px; top: 3px; width: 6px; height: 12px; border: solid #fff; border-width: 0 3px 3px 0; transform: rotate(45deg); }
+.t-opt:has(input:checked) { border-color: var(--pen); background: var(--pen-tint); }
+.t-opt input:focus-visible ~ .t-check { box-shadow: 0 0 0 3px var(--pen-tint), 0 0 0 5px var(--pen); }
+.t-opt-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.t-opt-text b { font-size: 18px; line-height: 1.4; font-weight: 600; }
+.t-opt-text small { font-size: 14px; color: var(--pencil); }
+.t-opt.is-done { cursor: default; background: var(--desk); border-style: dashed; }
+.t-opt.is-done .t-check { background: var(--faint); border-color: var(--faint); }
+.t-opt.is-done .t-check::after { content: ''; position: absolute; left: 8px; top: 3px; width: 6px; height: 12px; border: solid #fff; border-width: 0 3px 3px 0; transform: rotate(45deg); }
+.t-opt.is-done b { color: var(--pencil); }
+.t-actions-one .btn-primary { flex: 1; }
+.t-chosen { list-style: none; padding: 0; margin: 0 0 4px; border: 1px solid var(--rule); border-radius: 12px; background: var(--paper); }
+.t-chosen li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 11px 14px; }
+.t-chosen li + li { border-top: 1px solid var(--rule-soft); }
+.t-chosen .doc { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-chosen .num { font-size: 14px; color: var(--pencil); white-space: nowrap; }
+.cf-list { list-style: none; padding: 0; margin: 14px 0 0; text-align: left; border-top: 1px solid var(--rule-soft); }
+.cf-list li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 9px 2px; border-bottom: 1px solid var(--rule-soft); }
+.cf-list .doc { font-size: 16px; font-weight: 600; color: var(--ink); }
+.cf-list .num { font-size: 14px; color: var(--pencil); white-space: nowrap; }
+.t-done-sig { border: 1px solid var(--rule); border-radius: 12px; background: var(--paper); height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
+.t-done-sig img { max-height: 96px; max-width: 80%; }
+.t-done-cap { font-size: 14px; font-weight: 700; color: var(--pencil); margin-bottom: 8px; }
+
+/* ================================================================== */
+/* 묶음 QR (담당자 화면, 포스터)                                           */
+/* ================================================================== */
+.tag-bundle { border-color: var(--pen); color: var(--pen); background: var(--pen-tint); }
+.bundle { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px 28px; align-items: start;
+  background: var(--paper); border: 1px solid var(--rule); border-left: 4px solid var(--pen); border-radius: 0 var(--radius-sheet) var(--radius-sheet) 0;
+  padding: 20px 24px; margin-bottom: 20px; }
+.bundle h2 { font-size: 17px; font-weight: 700; display: flex; gap: 10px; align-items: baseline; }
+.bundle h2 .num { font-size: 13px; color: var(--pen); font-weight: 600; background: var(--pen-tint); border-radius: 999px; padding: 2px 10px; }
+.bundle > .bundle-main > p { font-size: 14px; color: var(--pencil); margin-top: 4px; }
+.bundle-list { list-style: none; padding: 0; margin: 12px 0 0; counter-reset: b; }
+.bundle-list li { display: flex; align-items: baseline; gap: 12px; padding: 7px 0; border-top: 1px solid var(--rule-soft); counter-increment: b; flex-wrap: wrap; }
+.bundle-list li::before { content: counter(b); font-size: 12px; font-weight: 700; color: var(--pen); width: 18px; flex: none; }
+.bundle-list .num { font-size: 13px; color: var(--pencil); min-width: 110px; }
+.bundle-list .doc { font-size: 16px; font-weight: 600; color: var(--ink); }
+.bundle-list a.doc { color: var(--pen); text-decoration: none; }
+.bundle-list a.doc:hover { text-decoration: underline; }
+.bundle-list .tag { margin-left: 2px; }
+.bundle-actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+@media (max-width: 900px) { .bundle { grid-template-columns: minmax(0, 1fr); } .bundle-actions { flex-direction: row; flex-wrap: wrap; } }
+.created .created-bundle { margin-top: 10px; color: var(--ink); }
+.link-list { max-height: 340px; }
+.link-row { gap: 10px; padding: 9px 0; }
+.link-row .lk-when { font-size: 13px; color: var(--pencil); min-width: 118px; flex: none; }
+.link-row .doc { flex: 1; min-width: 0; font-size: 15px; }
+.link-row.is-self { color: var(--pencil); cursor: default; }
+.onsite-sids { margin: 4px 0 12px; }
+.onsite-sids .pick-row .doc { font-size: 15px; }
+.bundle-sum { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 4px; }
+.bundle-sum li { display: flex; gap: 12px; align-items: baseline; font-size: 15px; }
+.bundle-sum .num { font-size: 13px; color: var(--pencil); }
+
+.qr-poster-group .ttl-list { list-style: none; padding: 0; margin: 6mm 0 0; width: 165mm; border-top: 0.3mm solid #999; }
+.qr-poster-group .ttl-list li { display: flex; justify-content: space-between; align-items: baseline; gap: 6mm; padding: 2.6mm 1mm; border-bottom: 0.3mm solid #ccc; text-align: left; }
+.qr-poster-group .ttl-list .t { font-family: var(--font-doc); font-weight: 600; font-size: 17pt; line-height: 1.3; }
+.qr-poster-group .ttl-list .tm { font-size: 12pt; color: #333; white-space: nowrap; }
+.qr-poster-group .when { margin-top: 3mm; font-size: 14pt; color: #111; font-weight: 600; }
+.qr-poster-group .qr { margin-top: 9mm; }
+.qr-poster-group .qr svg { width: 100%; height: 100%; }
+.qr-poster-group .how { margin-top: 8mm; }
+.qr-poster-group .url { margin-top: 6mm; }
+.qr-poster-group .brand { margin-top: 8mm; }
+.qr-stage .ttl-list { list-style: none; padding: 0; margin: 0; width: min(900px, 86vw); }
+.qr-stage .ttl-list li { display: flex; justify-content: space-between; align-items: baseline; gap: 2vw; padding: 0.7vh 0; border-bottom: 1px solid var(--rule-soft); text-align: left; }
+.qr-stage .ttl-list .t { font-size: clamp(20px, 2.6vw, 40px); font-weight: 600; line-height: 1.3; }
+.qr-stage .ttl-list .tm { font-size: clamp(14px, 1.5vw, 22px); color: var(--pencil); white-space: nowrap; }
+.qr-stage .ttl-list ~ .qr svg { width: min(46vh, 62vw); }
+.qr-poster-group { height: 100%; box-sizing: border-box; padding-bottom: 10mm; }
+.qr-poster-group .qr { flex: 1 1 0; min-height: 40mm; max-height: 112mm; display: flex; justify-content: center; margin-top: 8mm; }
+.qr-poster-group .qr-box { height: 100%; aspect-ratio: 1 / 1; }
+.qr-poster-group .qr svg { width: 100%; height: 100%; display: block; }
+.qr-poster-group.many .ttl-list .t { font-size: 14.5pt; }
+.qr-poster-group.many .ttl-list li { padding: 2mm 1mm; }
 
 </style>
 <script src="config.js"></script>
@@ -3228,6 +3444,7 @@ var qrcode = function() {
     return base;
   }
   function signUrl(id) { return siteBase() + (id ? '#s-' + id : ''); }
+  function groupUrl(gid) { return siteBase() + '#g-' + gid; }
   function staffUrl(key) { return siteBase() + '#staff-' + key; }
   function masterUrl(key) { return siteBase() + '#master-' + key; }
 
@@ -3343,7 +3560,7 @@ var qrcode = function() {
   /* 체험판 서버 (이 브라우저에만 저장)                                    */
   /* ================================================================ */
   var DemoServer = (function () {
-    var KEY = 'yeonsu-demo-v6';
+    var KEY = 'yeonsu-demo-v7';
     var db = null;
     var DEPTS = ['교장', '교감', '국어', '국어', '국어', '국어', '국어', '국어', '국어', '역사', '역사', '역사', '사회', '사회', '사회',
       '도덕', '도덕', '도덕', '수학', '수학', '수학', '수학', '수학', '수학', '수학', '과학', '과학', '과학', '과학', '과학', '과학',
@@ -3429,7 +3646,9 @@ var qrcode = function() {
       var made = nowStr(new Date(now.getTime() - 3 * 86400000));
       var sessions = [
         Object.assign({ id: 'demo01', title: '2026 교직원 성희롱·성폭력 예방교육', date: ymd(now), start: '15:30', end: '17:00', place: '시청각실',
-          hours: '1.5', docTitle: '전체 교직원 등록부', people: people.slice(), createdAt: made, updatedAt: made }, owner(54)),
+          hours: '1.5', docTitle: '전체 교직원 등록부', people: people.slice(), createdAt: made, updatedAt: made, group: 'gdemo001' }, owner(54)),
+        Object.assign({ id: 'demo04', title: '2026 아동학대 예방 및 신고의무자 교육', date: ymd(now), start: '17:00', end: '17:30', place: '시청각실',
+          hours: '0.5', docTitle: '전체 교직원 등록부', people: people.slice(), createdAt: made, updatedAt: made, group: 'gdemo001' }, owner(54)),
         Object.assign({ id: 'demo02', title: '2026학년도 학교생활기록부 교육청 점검 사항', date: '2026-08-24', start: '15:00', end: '16:00', place: '2층 회의실',
           hours: '1', docTitle: '전체 교직원 등록부', people: people.slice(), createdAt: '2026-08-20 10:12:00', updatedAt: '2026-08-20 10:12:00' }, owner(54)),
         Object.assign({ id: 'demo03', title: '학교폭력 사안 처리 절차 안내', date: ymd(later), start: '', end: '', place: '도서실',
@@ -3441,6 +3660,9 @@ var qrcode = function() {
         records.push({ sid: 'demo01', pid: people[i].id, name: people[i].name, dept: people[i].dept, signed: true,
           method: k === 7 ? '현장' : 'QR', note: '', sig: sigs[i] });
       });
+      order.slice(0, 30).sort(function (a, b) { return a - b; }).forEach(function (i) {
+        records.push({ sid: 'demo04', pid: people[i].id, name: people[i].name, dept: people[i].dept, signed: true, method: 'QR', note: '', sig: sigs[i] });
+      });
       var rest = order.slice(41);
       records.push({ sid: 'demo01', pid: people[rest[0]].id, name: people[rest[0]].name, dept: people[rest[0]].dept, signed: false, method: '', note: '출장', sig: '' });
       records.push({ sid: 'demo01', pid: people[rest[1]].id, name: people[rest[1]].name, dept: people[rest[1]].dept, signed: false, method: '', note: '병가', sig: '' });
@@ -3449,13 +3671,13 @@ var qrcode = function() {
         if (notes[i]) records.push({ sid: 'demo02', pid: p.id, name: p.name, dept: p.dept, signed: false, method: '', note: notes[i], sig: '' });
         else records.push({ sid: 'demo02', pid: p.id, name: p.name, dept: p.dept, signed: true, method: 'QR', note: '', sig: sigs[i] });
       });
-      return { v: 6, master: DEMO_MASTER, staffKey: DEMO_STAFF, staff: staff, sessions: sessions, records: records };
+      return { v: 7, master: DEMO_MASTER, staffKey: DEMO_STAFF, staff: staff, sessions: sessions, records: records };
     }
 
     function load() {
       if (db) return db;
       db = store.getJSON(KEY, null);
-      if (!db || db.v !== 6) { db = seed(); save(); }
+      if (!db || db.v !== 7) { db = seed(); save(); }
       return db;
     }
     function save() { store.setJSON(KEY, db); }
@@ -3482,13 +3704,29 @@ var qrcode = function() {
     function pubInfo(s) { return { id: s.id, title: s.title, date: s.date, start: s.start, end: s.end, place: s.place, docTitle: s.docTitle }; }
     function admInfo(s) {
       return { id: s.id, title: s.title, date: s.date, start: s.start, end: s.end, place: s.place, hours: s.hours, manager: s.manager,
-        ownerId: s.ownerId, docTitle: s.docTitle, createdAt: s.createdAt, updatedAt: s.updatedAt, total: s.people.length };
+        ownerId: s.ownerId, docTitle: s.docTitle, createdAt: s.createdAt, updatedAt: s.updatedAt, total: s.people.length, group: s.group || '' };
+    }
+    /* QR 묶음 (Code.gs와 같은 규칙) */
+    function bySchedule(a, b) {
+      return (a.date + (a.start || '99:99') + a.createdAt + a.id).localeCompare(b.date + (b.start || '99:99') + b.createdAt + b.id);
+    }
+    function groupList(gid) {
+      if (!/^g[a-z0-9]{5,15}$/.test(String(gid || ''))) return [];
+      return load().sessions.filter(function (x) { return x.group === gid; }).sort(bySchedule);
+    }
+    function tidy(gid, exceptId) {
+      if (!gid) return;
+      var rest = groupList(gid).filter(function (x) { return x.id !== exceptId; });
+      if (rest.length === 1) rest[0].group = '';
     }
     function detail(s) {
       var info = admInfo(s);
       info.people = s.people.map(function (p, i) { return { id: p.id, no: i + 1, dept: p.dept, name: p.name, extra: !!p.extra }; });
       info.records = load().records.filter(function (r) { return r.sid === s.id; })
         .map(function (r) { return { pid: r.pid, signed: r.signed, method: r.method, note: r.note }; });
+      info.groupSessions = s.group ? groupList(s.group).map(function (x) {
+        return { id: x.id, title: x.title, date: x.date, start: x.start, end: x.end, pids: x.people.map(function (p) { return p.id; }) };
+      }) : [];
       return info;
     }
     function clean(v, max) { return String(v === null || v === undefined ? '' : v).trim().replace(/^[=+\-@]+/, '').trim().slice(0, max || 200); }
@@ -3528,6 +3766,42 @@ var qrcode = function() {
         return { session: pubInfo(s), people: s.people.map(function (p, i) { return { id: p.id, no: i + 1, dept: p.dept, name: p.name, signed: !!signed[p.id] }; }) };
       },
       'public.sign': function (q) { return writeSig(find(q.id), q.pid, q.sig, 'QR'); },
+      'public.group': function (q) {
+        var list = groupList(q.gid);
+        if (!list.length) fail('QR을 찾을 수 없습니다. 연수가 지워졌거나 묶음이 풀렸습니다. 담당자에게 말씀해 주세요.', 'NOT_FOUND');
+        var map = {}, people = [];
+        list.forEach(function (s) {
+          var signed = {};
+          load().records.forEach(function (r) { if (r.sid === s.id && r.signed) signed[r.pid] = true; });
+          s.people.forEach(function (p, i) {
+            var x = map[p.id];
+            if (!x) { x = map[p.id] = { id: p.id, dept: p.dept, name: p.name, extra: !!p.extra, targets: [], signed: [], nos: {} }; people.push(x); }
+            x.targets.push(s.id); x.nos[s.id] = i + 1;
+            if (signed[p.id]) x.signed.push(s.id);
+          });
+        });
+        return { group: { id: q.gid }, sessions: list.map(pubInfo), people: order(people).map(function (x) {
+          return { id: x.id, dept: x.dept, name: x.name, targets: x.targets, signed: x.signed, nos: x.nos };
+        }) };
+      },
+      'public.signGroup': function (q) {
+        if (typeof q.sig !== 'string' || !SIGRE.test(q.sig)) fail('서명이 비어 있습니다. 서명 칸에 이름을 써 주세요.', 'BAD_INPUT');
+        var want = {}, n = 0;
+        (q.sids || []).forEach(function (sid) { if (!want[sid]) { want[sid] = 1; n++; } });
+        if (!n) fail('서명할 연수를 하나 이상 골라 주세요.', 'BAD_INPUT');
+        var list = groupList(q.gid);
+        if (!list.length) fail('QR을 찾을 수 없습니다. 연수가 지워졌거나 묶음이 풀렸습니다. 담당자에게 말씀해 주세요.', 'NOT_FOUND');
+        var chosen = list.filter(function (s) { return want[s.id]; });
+        if (chosen.length !== n) fail('이 QR에 없는 연수가 들어 있습니다. QR을 다시 찍어 주세요.', 'BAD_INPUT');
+        chosen.forEach(function (s) { person(s, q.pid); });
+        var done = [], already = [], who = null;
+        chosen.forEach(function (s) {
+          try { var r = writeSig(s, q.pid, q.sig, 'QR'); who = who || r; done.push({ id: s.id, title: s.title, no: r.no }); }
+          catch (e) { if (e.code === 'ALREADY') { already.push({ id: s.id, title: s.title }); return; } throw e; }
+        });
+        if (!done.length) fail('이미 서명이 등록되어 있습니다. 본인이 하지 않았다면 담당자에게 말씀해 주세요.', 'ALREADY');
+        return { pid: who.pid, name: who.name, dept: who.dept, sessions: done, already: already };
+      },
       'auth.check': function (q) { return { master: isMaster(q), staff: isStaff(q), school: CFG.school }; },
       'sessions.list': function (q) {
         needStaff(q);
@@ -3565,11 +3839,13 @@ var qrcode = function() {
           var own = staffById(q.session.ownerId);
           if (!own) fail('담당자를 다시 골라 주세요.', 'BAD_INPUT');
           s.ownerId = own.id; s.manager = own.dept + ' ' + own.name;
+          var old = s.group; s.group = ''; tidy(old, s.id);
         }
         save(); return admInfo(s);
       },
       'sessions.delete': function (q) {
         needStaff(q); var s = find(q.id);
+        tidy(s.group, s.id);
         db.sessions = db.sessions.filter(function (x) { return x !== s; });
         db.records = db.records.filter(function (r) { return r.sid !== s.id; });
         save(); return { id: s.id };
@@ -3607,7 +3883,48 @@ var qrcode = function() {
         load().records.forEach(function (r) { if (r.sid === s.id && r.signed && r.sig && (!want || want[r.pid])) map[r.pid] = r.sig; });
         return map;
       },
-      'sig.adminSign': function (q) { needStaff(q); var s = find(q.id); writeSig(s, q.pid, q.sig, '현장'); return detail(s); },
+      'sig.adminSign': function (q) {
+        needStaff(q); var s = find(q.id), targets = [s];
+        if (Array.isArray(q.sids)) {
+          var byId = {}, seen = {};
+          (s.group ? groupList(s.group) : []).forEach(function (x) { byId[x.id] = x; });
+          byId[s.id] = s; targets = [];
+          q.sids.forEach(function (sid) {
+            if (seen[sid]) return; seen[sid] = 1;
+            if (!byId[sid]) fail('이 연수와 묶이지 않은 연수가 들어 있습니다. 화면을 새로 고친 뒤 다시 해 주세요.', 'BAD_INPUT');
+            targets.push(byId[sid]);
+          });
+          if (!targets.length) fail('서명할 연수를 하나 이상 골라 주세요.', 'BAD_INPUT');
+        }
+        var done = [], skipped = [];
+        targets.forEach(function (x) {
+          try { writeSig(x, q.pid, q.sig, '현장'); done.push(x.id); }
+          catch (e) { if (x !== s && (e.code === 'ALREADY' || e.code === 'NOT_IN_LIST')) { skipped.push({ id: x.id, title: x.title }); return; } throw e; }
+        });
+        var d = detail(s); d.signedIds = done; d.skipped = skipped; return d;
+      },
+      'sessions.link': function (q) {
+        needStaff(q); var s = find(q.id), all = load().sessions, gid = s.group;
+        if (q.dissolve) { if (gid) all.forEach(function (x) { if (x.group === gid) x.group = ''; }); save(); return detail(s); }
+        if (!s.ownerId) fail('담당자가 정해지지 않은 연수는 묶을 수 없습니다. [연수 수정]에서 담당자를 먼저 정해 주세요.', 'BAD_INPUT');
+        var want = [], seen = {}; seen[s.id] = 1;
+        (q.ids || []).forEach(function (id) {
+          if (seen[id]) return; seen[id] = 1;
+          var x = all.filter(function (y) { return y.id === id; })[0];
+          if (!x) fail('고른 연수 중 지워진 연수가 있습니다. 화면을 새로 고친 뒤 다시 골라 주세요.', 'NOT_FOUND');
+          if (x.ownerId !== s.ownerId) fail('같은 담당자의 연수끼리만 묶을 수 있습니다.', 'BAD_INPUT');
+          want.push(x);
+        });
+        function tidyAll(g) { var rest = all.filter(function (x) { return x.group === g; }); if (rest.length === 1) rest[0].group = ''; }
+        if (!want.length) { if (gid) { s.group = ''; tidyAll(gid); } save(); return detail(s); }
+        if (!gid) { var used = {}; all.forEach(function (x) { if (x.group) used[x.group] = 1; }); do { gid = 'g' + rand(7); } while (used[gid]); }
+        var members = {}, olds = {}; members[s.id] = 1;
+        want.forEach(function (x) { members[x.id] = 1; });
+        all.forEach(function (x) { if (x.group === gid && !members[x.id]) x.group = ''; });
+        [s].concat(want).forEach(function (x) { if (x.group === gid) return; if (x.group) olds[x.group] = 1; x.group = gid; });
+        Object.keys(olds).forEach(tidyAll);
+        save(); return detail(s);
+      },
       'sig.delete': function (q) {
         needStaff(q); var s = find(q.id), r = rec(s.id, q.pid);
         if (!r || !r.signed) fail('지울 서명이 없습니다.', 'NOT_FOUND');
@@ -3652,11 +3969,40 @@ var qrcode = function() {
     return '<div class="demo-bar" role="note"><span><strong>체험판</strong>입니다. 입력한 내용은 이 브라우저에만 저장됩니다.</span>' +
       '<nav aria-label="체험판 화면 전환">' +
       '<a href="#s-demo01"' + (active === 'teacher' ? ' aria-current="page"' : '') + '>교사 화면</a>' +
+      '<a href="#g-gdemo001"' + (active === 'teacher-group' ? ' aria-current="page"' : '') + '>묶음 QR</a>' +
       '<a href="#staff-' + esc(k.staff) + '"' + (active === 'staff' ? ' aria-current="page"' : '') + '>담당자 바로가기</a>' +
       '<a href="#master-' + esc(k.master) + '"' + (active === 'master' ? ' aria-current="page"' : '') + '>총괄 바로가기</a>' +
       '<button type="button" data-demo-reset>처음 상태로 되돌리기</button></nav></div>';
   }
   function credit() { return '<footer class="credit">© 2026 김포한가람중학교 · 제작 JHK</footer>'; }
+
+  /* ---------- 이름표: 서비스 이름, 로고, 맨 위 띠, 작은 그림 ---------- */
+  var APP_NAME = '한가람 연수 등록부 생성 프로그램';
+  var LOGO_SVG = '<svg class="logo" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><rect width="64" height="64" rx="14" fill="#23408F"/>' +
+    '<path d="M12 40c6-10 10-16 13-14s-4 14 0 13 7-12 11-11-2 10 2 10 6-6 9-7" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<path d="M12 50h40" stroke="#fff" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"/></svg>';
+  function logo() { return LOGO_SVG; }
+  function masthead() {
+    return '<div class="masthead"><span>' + esc(CFG.school) + ' 교직원 전용 서비스입니다</span></div>';
+  }
+  var ICONS = {
+    'file-plus': '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 11v6M9 14h6"/>',
+    'qr': '<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h2v2h-2zM18 18h2v2h-2zM14 18v2M18 14h2"/>',
+    'printer': '<path d="M7 9V4h10v5"/><rect x="4" y="9" width="16" height="7" rx="2"/><path d="M7 14h10v6H7z"/>',
+    'arrow-right': '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    'list': '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" stroke-width="3"/>',
+    'search': '<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>'
+  };
+  function icon(name, cls) {
+    return '<svg class="ic' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + (ICONS[name] || '') + '</svg>';
+  }
+  // 연수 만들기 → QR → 등록부, 세 단계 그림 (첫 화면, 빈 목록에서 같이 씀)
+  function flowSteps() {
+    return '<ol class="flow">' +
+      '<li>' + icon('file-plus') + '<div><b>연수 만들기</b><span>연수명과 날짜만 입력</span></div></li>' +
+      '<li>' + icon('qr') + '<div><b>QR 붙이기</b><span>입구에 붙이거나 화면에 띄우기</span></div></li>' +
+      '<li>' + icon('printer') + '<div><b>등록부 인쇄</b><span>기존 등록부 양식 그대로</span></div></li></ol>';
+  }
 
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-demo-reset]');
@@ -3674,10 +4020,11 @@ var qrcode = function() {
   global.YS = {
     CFG: CFG, DEMO: DEMO, store: store, esc: esc, sleep: sleep, fmt: fmt, ymd: ymd, hm: hm, parseYmd: parseYmd,
     matchPerson: matchPerson, toast: toast, modal: modal, confirmBox: confirmBox, Api: Api, ApiError: ApiError, Auth: Auth,
-    createPad: createPad, qrSvg: qrSvg, signUrl: signUrl, siteBase: siteBase, staffUrl: staffUrl, masterUrl: masterUrl,
+    createPad: createPad, qrSvg: qrSvg, signUrl: signUrl, groupUrl: groupUrl, siteBase: siteBase, staffUrl: staffUrl, masterUrl: masterUrl,
     downloadShortcut: downloadShortcut, shortcutHtml: shortcutHtml,
     rosterPages: rosterPages, fitRoster: fitRoster, printHtml: printHtml, copyText: copyText, inFrame: inFrame,
-    demoBar: demoBar, credit: credit, DemoServer: DemoServer
+    demoBar: demoBar, credit: credit, DemoServer: DemoServer,
+    APP_NAME: APP_NAME, logo: logo, masthead: masthead, icon: icon, flowSteps: flowSteps
   };
 })(window);
 
@@ -3686,27 +4033,53 @@ var qrcode = function() {
   'use strict';
   var Y = global.YS, esc = Y.esc, fmt = Y.fmt, Api = Y.Api;
 
+  // st.mode: 'one'(연수 하나의 QR) | 'group'(묶음 QR)
+  // st.people: [{ id, dept, name, targets:[연수id], signed:[연수id], nos:{연수id: 연번} }]
   var app, st;
 
   function mount(rootEl, hash) {
     app = rootEl;
     document.body.className = 'is-teacher';
-    document.title = '연수 서명 | ' + Y.CFG.school;
-    st = { id: null, data: null, query: '', person: null, pad: null, step: 'pick', pushed: false };
-    var m = hash.match(/^s-([a-z0-9]+)(?:-d)?$/i);   // -d: 완료 화면 표시(아래 showDone 참고)
-    if (m) openSession(m[1]);
+    document.title = '연수 서명 | ' + Y.APP_NAME;
+    if (st) {   // 다른 QR로 넘어갈 때: 열려 있던 창과 서명 칸 정리
+      st.dead = true;
+      if (st.modal) { var m = st.modal; st.modal = null; m.close(); }
+      dropPad();
+    }
+    st = { mode: null, key: null, sessions: [], people: [], query: '', person: null, sids: [], sel: {}, pad: null,
+           step: 'pick', depth: 0, chooseShown: false };
+    var m2 = hash.match(/^([sg])-([a-z0-9]+)(?:-d)?$/i);   // -d: 완료 화면 표시(아래 showDone 참고)
+    if (m2) open(m2[1].toLowerCase() === 'g' ? 'group' : 'one', m2[2]);
     else landing();
   }
 
   function frame(inner, opts) {
     opts = opts || {};
-    app.innerHTML = Y.demoBar('teacher') + '<main class="t-wrap">' + inner + '</main>' + (opts.noCredit ? '' : Y.credit());
+    app.innerHTML = Y.demoBar(st && st.mode === 'group' ? 'teacher-group' : 'teacher') + Y.masthead() +
+      '<main class="t-wrap">' + inner + '</main>' + (opts.noCredit ? '' : Y.credit());
   }
 
-  function head(s) {
-    return '<header class="t-head"><p class="t-school">' + esc(Y.CFG.school) + ' 연수 서명</p>' +
-      (s ? '<h1 class="t-title doc">' + esc(s.title) + '</h1><p class="t-meta num">' + esc(fmt.dateK(s.date)) +
-        (s.start ? ' ' + esc(s.start) : '') + (s.place ? ', ' + esc(s.place) : '') + '</p>' : '') + '</header>';
+  function when(s, withDate) {
+    return ((withDate ? fmt.dateK(s.date) : '') + (s.start ? (withDate ? ' ' : '') + s.start : '')).trim();
+  }
+
+  function head(list) {
+    var brand = '<p class="t-brand">' + Y.logo() + '<span>' + esc(Y.APP_NAME) + '</span></p>';
+    if (!list || !list.length) return '<header class="t-head">' + brand + '</header>';
+    if (list.length === 1) {
+      var s = list[0];
+      return '<header class="t-head">' + brand + '<h1 class="t-title doc">' + esc(s.title) + '</h1><p class="t-meta num">' +
+        esc(fmt.dateK(s.date)) + (s.start ? ' ' + esc(s.start) : '') + (s.place ? ', ' + esc(s.place) : '') + '</p></header>';
+    }
+    var sameDay = list.every(function (x) { return x.date === list[0].date; });
+    var samePlace = list.every(function (x) { return x.place === list[0].place; });
+    return '<header class="t-head">' + brand + '<p class="t-cap">연수 ' + list.length + '개</p>' +
+      '<h1 class="t-titles">' + list.map(function (x) {
+        var w = when(x, !sameDay);
+        return '<span class="t-titles-item"><span class="doc">' + esc(x.title) + '</span>' + (w ? '<span class="num">' + esc(w) + '</span>' : '') + '</span>';
+      }).join('') + '</h1>' +
+      (sameDay ? '<p class="t-meta num">' + esc(fmt.dateK(list[0].date)) + (samePlace && list[0].place ? ', ' + esc(list[0].place) : '') + '</p>' : '') +
+      '</header>';
   }
 
   function loading() {
@@ -3717,14 +4090,14 @@ var qrcode = function() {
       '<p class="sr-only">불러오는 중입니다.</p>');
   }
 
-  function stateScreen(title, body, s, retry) {
-    frame(head(s) + '<section class="t-state"><h2>' + esc(title) + '</h2><p>' + esc(body) + '</p>' +
+  function stateScreen(title, body, list, retry) {
+    frame(head(list) + '<section class="t-state"><h2>' + esc(title) + '</h2><p>' + esc(body) + '</p>' +
       (retry ? '<button type="button" class="btn btn-secondary" data-act="retry">다시 불러오기</button>' : '') + '</section>');
     var b = app.querySelector('[data-act="retry"]');
     if (b) b.addEventListener('click', retry);
   }
 
-  function dropPad() { if (st.pad) { st.pad.destroy(); st.pad = null; } }
+  function dropPad() { if (st && st.pad) { st.pad.destroy(); st.pad = null; } }
 
   /* ---------- 주소만 열었을 때 ---------- */
   function landing() {
@@ -3732,27 +4105,53 @@ var qrcode = function() {
       '<p>휴대폰 카메라를 연수 QR에 대면 서명 화면이 열립니다.</p></section>');
   }
 
-  /* ---------- 연수 불러오기 (같은 휴대폰으로 다시 찍어도 항상 이름 목록부터) ---------- */
-  async function openSession(id) {
-    st.id = id;
+  /* ---------- 불러오기 (같은 휴대폰으로 다시 찍어도 항상 이름 목록부터) ---------- */
+  async function open(mode, key) {
+    st.mode = mode; st.key = key;
+    var my = st;
     loading();
+    var d;
     try {
-      st.data = await Api.call('public.session', { id: id });
+      d = mode === 'group' ? await Api.call('public.group', { gid: key }) : await Api.call('public.session', { id: key });
     } catch (e) {
-      if (e.code === 'NOT_FOUND') stateScreen('연수를 찾을 수 없습니다', '연수가 지워졌거나 주소가 잘못되었습니다. QR을 다시 찍어 주세요.', null);
-      else stateScreen('연수를 불러오지 못했습니다', e.message, null, function () { openSession(id); });
+      if (my.dead) return;
+      if (e.code === 'NOT_FOUND') {
+        if (mode === 'group') stateScreen('QR을 찾을 수 없습니다', '연수가 지워졌거나 묶음이 풀렸습니다. 담당자에게 말씀해 주세요.', null);
+        else stateScreen('연수를 찾을 수 없습니다', '연수가 지워졌거나 주소가 잘못되었습니다. QR을 다시 찍어 주세요.', null);
+      } else stateScreen('연수를 불러오지 못했습니다', e.message, null, function () { open(mode, key); });
       return;
+    }
+    if (my.dead) return;
+    if (mode === 'group') { st.sessions = d.sessions; st.people = d.people; }
+    else {
+      var sid = d.session.id;
+      st.sessions = [d.session];
+      st.people = d.people.map(function (p) {
+        var nos = {};
+        nos[sid] = p.no;
+        return { id: p.id, dept: p.dept, name: p.name, targets: [sid], signed: p.signed ? [sid] : [], nos: nos };
+      });
     }
     showPick();
   }
 
+  function sessionOf(id) { return st.sessions.filter(function (s) { return s.id === id; })[0]; }
+  function remaining(p) { return p.targets.filter(function (t) { return p.signed.indexOf(t) < 0; }); }
+  function inOrder(ids) { return st.sessions.filter(function (s) { return ids.indexOf(s.id) >= 0; }).map(function (s) { return s.id; }); }
+
   /* ---------- 이름 고르기 ---------- */
   function showPick() {
     st.step = 'pick';
-    var s = st.data.session;
-    var notToday = s.date !== Y.ymd(new Date());
-    frame(head(s) +
-      (notToday ? '<p class="t-notice" role="note">이 연수는 <b>' + esc(fmt.dateK(s.date)) + '</b> 연수입니다. 오늘 연수의 QR이 맞는지 확인해 주세요.</p>' : '') +
+    var today = Y.ymd(new Date());
+    var anyToday = st.sessions.some(function (s) { return s.date === today; });
+    var notice = '';
+    if (!anyToday) {
+      var sameDay = st.sessions.every(function (s) { return s.date === st.sessions[0].date; });
+      notice = '<p class="t-notice" role="note">' + (sameDay
+        ? '이 연수는 <b>' + esc(fmt.dateK(st.sessions[0].date)) + '</b> 연수입니다. 오늘 연수의 QR이 맞는지 확인해 주세요.'
+        : '오늘 연수가 아닙니다. 오늘 연수의 QR이 맞는지 확인해 주세요.') + '</p>';
+    }
+    frame(head(st.sessions) + notice +
       '<div class="t-search"><label class="sr-only" for="q">이름 검색</label>' +
       '<input id="q" class="input" type="search" autocomplete="off" enterkeyhint="search" placeholder="이름 검색 (초성도 됩니다. 예: ㄱㅅㅈ)" value="' + esc(st.query) + '"></div>' +
       '<div id="list" role="list"></div>' +
@@ -3768,12 +4167,15 @@ var qrcode = function() {
     app.querySelector('#list').addEventListener('click', function (e) {
       var b = e.target.closest('[data-pid]');
       if (!b) return;
-      var p = st.data.people.filter(function (x) { return x.id === b.getAttribute('data-pid'); })[0];
+      var p = st.people.filter(function (x) { return x.id === b.getAttribute('data-pid'); })[0];
       if (!p) return;
-      if (p.signed) { alreadySigned(); return; }
+      var rest = remaining(p);
+      if (!rest.length) { alreadySigned(); return; }
       st.person = p;
-      try { history.pushState({ ys: 'sign' }, ''); st.pushed = true; } catch (err) { st.pushed = false; }
-      showSign();
+      st.sel = {};
+      st.chooseShown = rest.length > 1;
+      if (st.chooseShown) { push('choose'); showChoose(); }
+      else { st.sids = rest; push('sign'); showSign(); }
     });
     renderList();
   }
@@ -3788,7 +4190,7 @@ var qrcode = function() {
   }
 
   function renderList() {
-    var people = st.data.people.filter(function (p) { return Y.matchPerson(st.query, p); });
+    var people = st.people.filter(function (p) { return Y.matchPerson(st.query, p); });
     var el = app.querySelector('#list');
     if (!people.length) {
       el.innerHTML = '<p class="t-empty">‘' + esc(st.query) + '’에 맞는 이름이 없습니다. 이름 일부나 초성만 입력해 보세요.</p>';
@@ -3796,22 +4198,69 @@ var qrcode = function() {
     }
     var html = '', last = null;
     people.forEach(function (p) {
+      var done = !remaining(p).length;
+      var partial = !done && p.signed.length > 0;
       if (p.dept !== last) { html += '<div class="t-group" role="presentation">' + esc(p.dept || '기타') + '</div>'; last = p.dept; }
-      html += '<button type="button" role="listitem" class="t-person' + (p.signed ? ' is-done' : '') + '" data-pid="' + esc(p.id) + '">' +
+      html += '<button type="button" role="listitem" class="t-person' + (done ? ' is-done' : '') + '" data-pid="' + esc(p.id) + '">' +
         '<span class="nm">' + esc(p.name) + '</span>' +
-        (p.signed ? '<span class="done-label">서명 완료</span>' : '<span class="dp">' + esc(p.dept) + '</span>') + '</button>';
+        (done ? '<span class="done-label">서명 완료</span>'
+          : partial ? '<span class="dp part">' + p.targets.length + '개 중 ' + p.signed.length + '개 서명</span>'
+          : '<span class="dp">' + esc(p.dept) + '</span>') + '</button>';
     });
     el.innerHTML = html;
+  }
+
+  /* ---------- 서명할 연수 고르기 (묶음 QR, 남은 연수가 둘 이상일 때) ---------- */
+  function showChoose() {
+    st.step = 'choose';
+    var p = st.person;
+    var items = st.sessions.filter(function (s) { return p.targets.indexOf(s.id) >= 0; }).map(function (s) {
+      var done = p.signed.indexOf(s.id) >= 0;
+      var meta = esc(when(s, true));
+      if (done) {
+        return '<div class="t-opt is-done"><span class="t-check" aria-hidden="true"></span><span class="t-opt-text"><b class="doc">' + esc(s.title) + '</b>' +
+          '<small class="num">' + (meta ? meta + ' · ' : '') + '서명 완료</small></span></div>';
+      }
+      return '<label class="t-opt"><input type="checkbox" value="' + esc(s.id) + '"' + (st.sel[s.id] === false ? '' : ' checked') + '>' +
+        '<span class="t-check" aria-hidden="true"></span><span class="t-opt-text"><b class="doc">' + esc(s.title) + '</b>' +
+        (meta ? '<small class="num">' + meta + '</small>' : '') + '</span></label>';
+    }).join('');
+    frame('<button type="button" class="btn btn-quiet t-back" data-act="back">‹ 이름 다시 고르기</button>' +
+      '<h1 class="t-ask">' + esc(p.name) + ' 선생님,<br>서명할 연수를 고르세요.</h1>' +
+      '<p class="t-help">참석하는 연수만 남겨 두세요.</p>' +
+      '<div class="t-choose" role="group" aria-label="서명할 연수">' + items + '</div>' +
+      '<div class="t-error" role="alert" hidden></div>' +
+      '<div class="t-actions t-actions-one"><button type="button" class="btn btn-primary" data-act="next">서명하기</button></div>', { noCredit: true });
+    app.querySelector('[data-act="back"]').addEventListener('click', goPick);
+    app.querySelector('.t-choose').addEventListener('change', function (e) {
+      if (e.target.type === 'checkbox') { st.sel[e.target.value] = e.target.checked; if (e.target.checked) showError(''); }
+    });
+    app.querySelector('[data-act="next"]').addEventListener('click', function () {
+      var chosen = remaining(p).filter(function (sid) { return st.sel[sid] !== false; });
+      if (!chosen.length) { showError('서명할 연수를 하나 이상 골라 주세요.'); return; }
+      st.sids = inOrder(chosen);
+      push('sign');
+      showSign();
+    });
+    global.scrollTo(0, 0);
   }
 
   /* ---------- 서명 ---------- */
   function showSign() {
     st.step = 'sign';
     var p = st.person;
-    frame('<button type="button" class="btn btn-quiet t-back" data-act="back">‹ 이름 다시 고르기</button>' +
-      '<h1 class="t-ask">' + esc(p.name) + ' 선생님,<br>아래 칸에 서명해 주세요.</h1>' +
-      '<table class="form-row t-sign-row" aria-label="등록부의 내 줄"><thead><tr><th style="width:22%">연번</th><th>교과/업무</th><th>성명</th></tr></thead>' +
-      '<tbody><tr><td class="num">' + p.no + '</td><td>' + esc(p.dept) + '</td><td>' + esc(p.name) + '</td></tr></tbody></table>' +
+    var rows;
+    if (st.mode === 'one') {
+      rows = '<table class="form-row t-sign-row" aria-label="등록부의 내 줄"><thead><tr><th style="width:22%">연번</th><th>교과/업무</th><th>성명</th></tr></thead>' +
+        '<tbody><tr><td class="num">' + esc(p.nos[st.sids[0]]) + '</td><td>' + esc(p.dept) + '</td><td>' + esc(p.name) + '</td></tr></tbody></table>';
+    } else {
+      rows = '<ul class="t-chosen" aria-label="서명이 들어갈 등록부">' + st.sids.map(function (sid) {
+        var s = sessionOf(sid);
+        return '<li><span class="doc">' + esc(s.title) + '</span><span class="num">연번 ' + esc(p.nos[sid]) + '</span></li>';
+      }).join('') + '</ul>';
+    }
+    frame('<button type="button" class="btn btn-quiet t-back" data-act="back">‹ ' + (st.chooseShown ? '연수 다시 고르기' : '이름 다시 고르기') + '</button>' +
+      '<h1 class="t-ask">' + esc(p.name) + ' 선생님,<br>아래 칸에 서명해 주세요.</h1>' + rows +
       '<div id="pad"></div>' +
       '<div class="t-error" role="alert" hidden></div>' +
       '<div class="t-actions"><button type="button" class="btn btn-secondary" data-act="clear">다시 쓰기</button>' +
@@ -3822,7 +4271,7 @@ var qrcode = function() {
       submit.setAttribute('aria-disabled', String(!st.pad.isEnough()));
       if (st.pad.isEnough()) showError('');
     });
-    app.querySelector('[data-act="back"]').addEventListener('click', backToPick);
+    app.querySelector('[data-act="back"]').addEventListener('click', goBack);
     app.querySelector('[data-act="clear"]').addEventListener('click', function () { st.pad.clear(); showError(''); });
     submit.addEventListener('click', function () {
       if (!st.pad.isEnough()) { showError('서명 칸에 이름을 써 주세요.'); return; }
@@ -3834,12 +4283,6 @@ var qrcode = function() {
     global.scrollTo(0, 0);
   }
 
-  function backToPick() {
-    dropPad();
-    if (st.pushed) history.back();   // popstate에서 목록을 그립니다
-    else showPick();
-  }
-
   function showError(msg) {
     var el = app.querySelector('.t-error');
     if (!el) return;
@@ -3847,27 +4290,48 @@ var qrcode = function() {
     el.hidden = !msg;
   }
 
+  /* ---------- 방문 기록: 이름 → (연수 고르기) → 서명. 뒤로 가기로 한 단계씩 ---------- */
+  function push(step) {
+    try { history.pushState({ ys: step }, ''); st.depth++; } catch (e) { st.noHistory = true; }
+  }
+  function goPick() {
+    dropPad();
+    if (st.depth > 0 && !st.noHistory) history.go(-st.depth);   // popstate에서 목록을 그립니다
+    else { st.depth = 0; showPick(); }
+  }
+  function goBack() {
+    dropPad();
+    if (st.depth > 0 && !st.noHistory) history.back();
+    else if (st.step === 'sign' && st.chooseShown) showChoose();
+    else showPick();
+  }
+
   /* ---------- 등록 확인 (B안) ---------- */
   function confirmSign(sig) {
-    var p = st.person, result = null, fatal = null, repick = false;
+    var my = st, p = st.person, result = null, fatal = null, repick = false;
+    var sub = st.mode === 'one'
+      ? '<p class="cf-sub num">' + (p.dept ? esc(p.dept) + ' · ' : '') + '연번 ' + esc(p.nos[st.sids[0]]) + '</p>'
+      : (p.dept ? '<p class="cf-sub">' + esc(p.dept) + '</p>' : '') +
+        '<ul class="cf-list">' + st.sids.map(function (sid) {
+          return '<li><span class="doc">' + esc(sessionOf(sid).title) + '</span><span class="num">연번 ' + esc(p.nos[sid]) + '</span></li>';
+        }).join('') + '</ul>';
     st.modal = Y.modal({
       sheet: true, label: '서명 등록 확인',
-      html: '<p class="cf-lead">아래 이름으로 서명이 등록됩니다</p>' +
-        '<p class="cf-name">' + esc(p.name) + '</p>' +
-        '<p class="cf-sub num">' + (p.dept ? esc(p.dept) + ' · ' : '') + '연번 ' + p.no + '</p>',
+      html: '<p class="cf-lead">아래 이름으로 서명이 등록됩니다</p><p class="cf-name">' + esc(p.name) + '</p>' + sub,
       onClose: function () {
-        st.modal = null;
+        if (my.dead) return;
+        my.modal = null;
         if (result) {
           dropPad();
           // 주소 끝에 -d를 붙여 둡니다. 같은 탭에서 같은 QR을 다시 찍어도 주소가 달라서 이름 목록이 새로 열립니다.
-          try { history.replaceState(null, '', '#s-' + st.id + '-d'); } catch (err) { /* ignore */ }
-          st.pushed = false;
+          try { history.replaceState(null, '', '#' + (st.mode === 'group' ? 'g' : 's') + '-' + st.key + '-d'); } catch (err) { /* ignore */ }
+          st.depth = 0;
           showDone(result, sig);
         } else if (fatal) {
           dropPad();
-          stateScreen(fatal.code === 'NOT_FOUND' ? '연수를 찾을 수 없습니다' : '명단에 없는 이름입니다', fatal.message, st.data.session);
+          stateScreen(fatal.code === 'NOT_FOUND' ? '연수를 찾을 수 없습니다' : '명단에 없는 이름입니다', fatal.message, st.sessions);
         } else if (repick) {
-          backToPick();
+          goPick();
         }
         // 창 바깥을 누르거나 Esc: 서명 화면으로 돌아가 서명을 고칠 수 있습니다.
       },
@@ -3876,11 +4340,18 @@ var qrcode = function() {
         {
           label: '등록', kind: 'primary', busy: '등록 중…', onClick: async function () {
             try {
-              result = await Api.call('public.sign', { id: st.id, pid: p.id, sig: sig });
+              if (my.mode === 'group') {
+                result = await Api.call('public.signGroup', { gid: my.key, pid: p.id, sids: my.sids, sig: sig });
+              } else {
+                var r = await Api.call('public.sign', { id: my.key, pid: p.id, sig: sig });
+                result = { name: r.name, dept: r.dept, sessions: [{ id: my.key, title: my.sessions[0].title, no: r.no }], already: [] };
+              }
             } catch (e) {
               if (e.code === 'NOT_FOUND' || e.code === 'NOT_IN_LIST') { fatal = e; return; }
               if (e.code === 'NETWORK' || e.code === 'PARSE') throw new Error('서명이 등록되지 않았습니다. 인터넷 연결을 확인하고 [등록]을 다시 눌러 주세요.');
-              if (e.code === 'ALREADY') p.signed = true;   // 목록으로 돌아가면 ‘서명 완료’로 보이게
+              if (e.code === 'ALREADY') {   // 목록으로 돌아가면 ‘서명 완료’로 보이게
+                my.sids.forEach(function (sid) { if (p.signed.indexOf(sid) < 0) p.signed.push(sid); });
+              }
               throw e;   // 이미 서명됨 등: 창 안에 안내, [이름 다시 선택] 가능
             }
           }
@@ -3892,23 +4363,34 @@ var qrcode = function() {
   /* ---------- 완료 ---------- */
   function showDone(r, sig) {
     st.step = 'done';
-    frame('<section class="t-done"><h1 tabindex="-1"><b>' + esc(r.name) + '</b> 선생님의 서명이 등록되었습니다.</h1>' +
-      '<table class="form-row" aria-label="등록부에 들어간 서명"><thead><tr><th style="width:16%">연번</th><th style="width:24%">교과/업무</th><th style="width:24%">성명</th><th>서명</th></tr></thead>' +
-      '<tbody><tr><td class="num">' + esc(r.no) + '</td><td>' + esc(r.dept) + '</td><td>' + esc(r.name) + '</td>' +
-      '<td class="sig-cell"><img class="settle" alt="' + esc(r.name) + ' 서명" src="' + esc(sig) + '"></td></tr></tbody></table>' +
-      '<div class="about"><p class="doc" style="color:var(--ink);margin:0">' + esc(st.data.session.title) + '</p><p>이 화면은 닫아도 됩니다.</p></div></section>');
+    var body;
+    if (st.mode === 'one') {
+      var one = r.sessions[0];
+      body = '<table class="form-row" aria-label="등록부에 들어간 서명"><thead><tr><th style="width:16%">연번</th><th style="width:24%">교과/업무</th><th style="width:24%">성명</th><th>서명</th></tr></thead>' +
+        '<tbody><tr><td class="num">' + esc(one.no) + '</td><td>' + esc(r.dept) + '</td><td>' + esc(r.name) + '</td>' +
+        '<td class="sig-cell"><img class="settle" alt="' + esc(r.name) + ' 서명" src="' + esc(sig) + '"></td></tr></tbody></table>' +
+        '<div class="about"><p class="doc" style="color:var(--ink);margin:0">' + esc(one.title) + '</p><p>이 화면은 닫아도 됩니다.</p></div>';
+    } else {
+      body = '<div class="t-done-sig"><img class="settle" alt="' + esc(r.name) + ' 서명" src="' + esc(sig) + '"></div>' +
+        '<p class="t-done-cap">서명이 들어간 등록부</p><ul class="t-chosen">' + r.sessions.map(function (x) {
+          return '<li><span class="doc">' + esc(x.title) + '</span><span class="num">연번 ' + esc(x.no) + '</span></li>';
+        }).join('') + '</ul>' +
+        (r.already && r.already.length ? '<p class="t-help">이미 서명되어 있던 연수: ' + esc(r.already.map(function (x) { return x.title; }).join(', ')) + '</p>' : '') +
+        '<div class="about"><p>이 화면은 닫아도 됩니다.</p></div>';
+    }
+    frame('<section class="t-done"><h1 tabindex="-1"><b>' + esc(r.name) + '</b> 선생님의 서명이 등록되었습니다.</h1>' + body + '</section>');
     var h = app.querySelector('h1');
     if (h) h.focus({ preventScroll: true });
   }
 
-  global.addEventListener('popstate', function () {
-    if (!st || !app || document.body.className !== 'is-teacher') return;
-    if (st.step === 'sign') {
-      if (st.modal) st.modal.close();
-      dropPad();
-      st.pushed = false;
-      showPick();
-    }
+  global.addEventListener('popstate', function (e) {
+    if (!st || !app || document.body.className !== 'is-teacher' || st.step === 'done' || !st.people.length) return;
+    if (st.modal) { var m = st.modal; st.modal = null; m.close(); }
+    dropPad();
+    var ys = e.state && e.state.ys;
+    if (ys === 'choose' && st.person) { st.depth = 1; showChoose(); }
+    else if (ys === 'sign' && st.person && st.sids.length) { st.depth = st.chooseShown ? 2 : 1; showSign(); }
+    else { st.depth = 0; showPick(); }
   });
 
   global.Teacher = { mount: mount };
@@ -3929,10 +4411,10 @@ var qrcode = function() {
     document.body.className = 'is-admin';
     stop();
     if (/^m-/.test(hash)) {
-      simple('<h1 class="a-h1 doc">이 링크는 더 이상 쓰지 않습니다</h1><p class="a-sub">교직원 메신저 공지의 <b>연수 담당자 바로가기</b>로 들어와 이름을 고르면, 내가 연 연수가 모두 보입니다.</p>');
+      simple('<h1 class="a-h1">이 링크는 더 이상 쓰지 않습니다</h1><p class="a-sub">교직원 메신저 공지의 <b>연수 담당자 바로가기</b>로 들어와 이름을 고르면, 내가 연 연수가 모두 보입니다.</p>');
       return;
     }
-    simple('<p class="a-sub" aria-busy="true">바로가기를 확인하고 있습니다…</p>');
+    splash('바로가기를 확인하고 있습니다');
     var m, kind = '';
     try {
       if ((m = hash.match(/^master-([a-z0-9]+)$/))) {
@@ -3954,12 +4436,12 @@ var qrcode = function() {
       }
     } catch (e) {
       if (e.code === 'NETWORK' || e.code === 'PARSE') {
-        simple('<h1 class="a-h1 doc">바로가기를 확인하지 못했습니다</h1><p class="a-sub">' + esc(e.message) + '</p>' +
+        simple('<h1 class="a-h1">바로가기를 확인하지 못했습니다</h1><p class="a-sub">' + esc(e.message) + '</p>' +
           '<p style="margin-top:18px"><button type="button" class="btn btn-secondary" data-act="retry">다시 시도</button></p>');
         app.querySelector('[data-act="retry"]').addEventListener('click', function () { enter(rootEl, hash); });
         return;
       }
-      simple('<h1 class="a-h1 doc">열 수 없는 바로가기입니다</h1><p class="a-sub">' + (kind === 'master'
+      simple('<h1 class="a-h1">열 수 없는 바로가기입니다</h1><p class="a-sub">' + (kind === 'master'
         ? '총괄 열쇠가 바뀌었을 수 있습니다. 구글 시트의 ‘설정’ 시트에서 지금 총괄 링크를 확인해 주세요.'
         : '담당자 열쇠가 새로 바뀌었을 수 있습니다. 교직원 메신저 공지의 최신 바로가기로 다시 열어 주세요.') + '</p>');
     }
@@ -3971,7 +4453,7 @@ var qrcode = function() {
   function mount(rootEl, hash) {
     app = rootEl;
     document.body.className = 'is-admin';
-    document.title = '담당자 화면 | ' + Y.CFG.school + ' 연수 서명';
+    document.title = (Auth.master() ? '총괄' : '연수 담당자') + ' | ' + Y.APP_NAME;
     stop();
     A.route = hash;
     if (A.created && 'admin-s-' + A.created !== hash) A.created = null;
@@ -3979,13 +4461,19 @@ var qrcode = function() {
     if (hash === 'admin-masterkey') return showMasterKey();
     if (!Auth.master() && !Auth.staff()) return showNoAccess();
     var m;
-    if (hash === 'admin-who') return showWho();
-    if (hash === 'admin') return isMaster() || Auth.me() ? showHome() : showWho();
-    if (hash === 'admin-new') return isMaster() || Auth.me() ? showEditor(null, false) : showWho();
+    if (hash === 'admin-who') return showWho('mine');
+    if (hash === 'admin-who-new') return showWho('new');
+    if (hash === 'admin') return isMaster() || Auth.me() ? showHome() : showWelcome();
+    if (hash === 'admin-new') {
+      if (isMaster() || Auth.me()) return showEditor(null, false);
+      location.replace('#admin-who-new');   // 누가 여는 연수인지 먼저
+      return;
+    }
     if ((m = hash.match(/^admin-edit-(\w+)$/))) return showEditor(m[1], false);
     if ((m = hash.match(/^admin-copy-(\w+)$/))) return showEditor(m[1], true);
     if ((m = hash.match(/^admin-s-(\w+)$/))) return showBoard(m[1]);
     if ((m = hash.match(/^admin-roster-(\w+)$/))) return showRoster(m[1]);
+    if ((m = hash.match(/^admin-groster-(\w+)$/))) return showGroupRoster(m[1]);
     if (hash === 'admin-staff') return showStaff();
     if (hash === 'admin-links') return showLinks();
     location.replace('#admin');
@@ -3994,21 +4482,35 @@ var qrcode = function() {
   function isMaster() { return !!Auth.master(); }
   function meText(p) { return (p.dept ? p.dept + ' ' : '') + p.name; }
 
-  function frame(inner, nav) {
+  function brandBar(right) {
+    return Y.masthead() + '<header class="a-top"><a class="a-brand" href="#admin">' + Y.logo() +
+      '<span class="a-brand-name">' + esc(Y.APP_NAME) + '</span><span class="a-brand-school">' + esc(Y.CFG.school) + '</span></a>' +
+      (right || '') + '</header>';
+  }
+
+  function frame(inner, nav, opts) {
     var master = isMaster(), me = Auth.me();
     function link(href, label, key) { return '<a href="' + href + '"' + (nav === key ? ' aria-current="page"' : '') + '>' + label + '</a>'; }
-    app.innerHTML = Y.demoBar(master ? 'master' : 'staff') +
-      '<header class="a-top"><a class="a-brand" href="#admin">' + esc(Y.CFG.school) + '<span>연수 서명</span></a>' +
-      '<nav class="a-nav" aria-label="담당자 메뉴">' +
-      (master ? link('#admin', '모든 연수', 'list') + link('#admin-staff', '교직원 명단', 'staff') + link('#admin-links', '링크 관리', 'links')
-              : link('#admin', '내 연수', 'list') +
-                (me ? '<span class="a-me"><b>' + esc(meText(me)) + '</b> 선생님<a href="#admin-who">이름 바꾸기</a></span>' : '')) +
-      '</nav></header><main class="a-main">' + inner + '</main>' + Y.credit();
+    var right;
+    if (master) right = '<nav class="a-nav" aria-label="총괄 메뉴"><span class="a-role">총괄</span>' +
+      link('#admin', '모든 연수', 'list') + link('#admin-staff', '교직원 명단', 'staff') + link('#admin-links', '링크 관리', 'links') + '</nav>';
+    else if (me) right = '<nav class="a-nav" aria-label="담당자 메뉴">' + link('#admin', '내 연수', 'list') +
+      '<span class="a-me"><b>' + esc(meText(me)) + '</b> 선생님<a href="#admin-who">이름 바꾸기</a></span></nav>';
+    else right = '<div class="a-nav"><span class="a-role">연수 담당자</span></div>';
+    app.innerHTML = Y.demoBar(master ? 'master' : 'staff') + brandBar(right) +
+      '<main class="a-main' + (opts && opts.wide ? ' a-main-wide' : '') + '">' + inner + '</main>' + Y.credit();
   }
 
   function simple(inner) {
-    app.innerHTML = Y.demoBar('staff') + '<header class="a-top"><a class="a-brand" href="#admin">' + esc(Y.CFG.school) +
-      '<span>연수 서명</span></a></header><main class="a-main"><div class="sheet sheet-pad" style="max-width:640px">' + inner + '</div></main>' + Y.credit();
+    app.innerHTML = Y.demoBar('staff') + brandBar('') +
+      '<main class="a-main"><div class="sheet sheet-pad a-simple">' + inner + '</div></main>' + Y.credit();
+  }
+
+  // 바로가기를 연 직후 잠깐 보이는 화면
+  function splash(text) {
+    app.innerHTML = Y.demoBar('staff') + Y.masthead() +
+      '<main class="splash" aria-busy="true"><div class="splash-logo">' + Y.logo() + '</div>' +
+      '<p class="splash-name">' + esc(Y.APP_NAME) + '</p><p class="splash-text">' + esc(text) + '<span class="dots" aria-hidden="true"></span></p></main>';
   }
 
   function loadingFrame(nav) {
@@ -4028,7 +4530,7 @@ var qrcode = function() {
     if (e.code === 'AUTH_STAFF') { Auth.set('staff', ''); Auth.set('master', ''); }
     if (e.code === 'AUTH_MASTER') Auth.set('master', '');
     if (!Auth.master() && !Auth.staff()) {
-      simple('<h1 class="a-h1 doc">다시 들어와 주세요</h1><p class="a-sub">' + esc(e.message) + '</p>');
+      simple('<h1 class="a-h1">다시 들어와 주세요</h1><p class="a-sub">' + esc(e.message) + '</p>');
       return;
     }
     frame('<div class="sheet sheet-pad" style="max-width:640px"><h1 class="sheet-title">이 화면을 열 수 없습니다</h1><p class="a-sub">' + esc(e.message) + '</p>' +
@@ -4058,47 +4560,96 @@ var qrcode = function() {
   /* 들어올 권한이 없을 때                                               */
   /* ================================================================ */
   function showNoAccess() {
-    simple('<h1 class="a-h1 doc">담당자 바로가기로 열어 주세요</h1>' +
-      '<p class="a-sub" style="margin-top:8px">교직원 메신저 공지에 있는 <b>연수 담당자 바로가기</b>(파일 또는 링크)로 들어오면, 이름을 골라 내 연수를 보고 새 연수를 만들 수 있습니다.</p>' +
+    simple('<h1 class="a-h1">담당자 바로가기로 열어 주세요</h1>' +
+      '<p class="a-sub" style="margin-top:8px">교직원 메신저 공지에 있는 <b>연수 담당자 바로가기</b>(파일 또는 링크)로 들어오면, 연수를 만들고 내가 연 연수를 볼 수 있습니다.</p>' +
       '<p style="margin-top:22px"><a class="btn btn-quiet btn-small" href="#admin-masterkey" style="margin-left:-8px">총괄 열쇠로 들어가기</a></p>');
   }
 
   /* ================================================================ */
-  /* 이름 고르기                                                        */
+  /* 처음 화면: 무엇을 할지 먼저 고릅니다                                  */
   /* ================================================================ */
-  async function showWho() {
+  function showWelcome() {
+    frame('<section class="welcome">' +
+      '<div class="welcome-intro"><p class="eyebrow">연수 담당자 화면</p>' +
+      '<h1 class="welcome-title">연수 출석,<br>종이 대신 QR로</h1>' +
+      '<p class="welcome-lead">연수를 만들면 QR이 생기고, 선생님들이 휴대폰으로 서명하면 등록부가 저절로 채워집니다.</p></div>' +
+      '<div class="welcome-flow">' + Y.flowSteps() + '</div>' +
+      '<div class="sheet welcome-card"><h2>무엇을 하시겠어요?</h2>' +
+      action('#admin-who-new', '새 연수 만들기', '연수를 열고 서명용 QR 받기', true) +
+      action('#admin-who', '내가 연 연수 보기', '서명 현황 확인, 등록부 인쇄') +
+      '<p class="welcome-note">출석 서명하는 곳이 아닙니다. 연수에 참석하는 선생님은 연수 장소의 QR로 서명합니다.</p></div>' +
+      '</section>', '', { wide: true });
+  }
+
+  function action(href, title, sub, primary) {
+    return '<a class="action' + (primary ? ' action-primary' : '') + '" href="' + href + '"><span class="action-text"><b>' + title + '</b>' +
+      '<span>' + sub + '</span></span>' + Y.icon('arrow-right') + '</a>';
+  }
+
+  /* ================================================================ */
+  /* 이름 고르기: 교과 칩 → 이름 칩 (교과는 묶지 않고 모두 따로)              */
+  /* ================================================================ */
+  async function showWho(mode) {
     loadingFrame('list');
     var list;
-    try { list = await staffList(); } catch (e) { return errorFrame(e, showWho, 'list'); }
-    var q = '';
-    frame('<div class="who-list"><div class="a-pagehead"><div class="grow"><h1 class="a-h1 doc">이름을 선택하세요</h1>' +
-      '<p class="a-sub">내가 담당한 연수를 보고, 새 연수를 만들 수 있습니다.</p></div></div>' +
-      '<div class="sheet sheet-pad"><div class="t-search" style="padding-top:0"><label class="sr-only" for="wq">이름 검색</label>' +
-      '<input id="wq" class="input" type="search" autocomplete="off" placeholder="이름 검색 (초성도 됩니다)"></div><div id="wl" role="list"></div></div></div>', 'list');
-    function draw() {
-      var rows = list.filter(function (p) { return Y.matchPerson(q, p); });
-      var html = '', last = null;
-      rows.forEach(function (p) {
-        if (p.dept !== last) { html += '<div class="t-group">' + esc(p.dept || '기타') + '</div>'; last = p.dept; }
-        html += '<button type="button" role="listitem" class="t-person" data-id="' + esc(p.id) + '"><span class="nm">' + esc(p.name) + '</span><span class="dp">' + esc(p.dept) + '</span></button>';
-      });
-      app.querySelector('#wl').innerHTML = html || '<p class="t-empty">맞는 이름이 없습니다. 명단에 이름이 없다면 총괄 담당자에게 말씀해 주세요.</p>';
+    try { list = await staffList(); } catch (e) { return errorFrame(e, function () { showWho(mode); }, 'list'); }
+    var isNew = mode === 'new', me = Auth.me();
+    var depts = [], seen = {};
+    list.forEach(function (p) { var d = p.dept || '기타'; if (!seen[d]) { seen[d] = true; depts.push(d); } });
+    var cur = me && seen[me.dept || '기타'] ? (me.dept || '기타') : null, q = '';
+    frame('<div class="who-wrap"><a class="a-back" href="#admin">‹ 처음 화면</a>' +
+      '<section class="sheet who-card">' +
+      '<p class="who-step">' + (isNew ? '새 연수 만들기 <span class="num">1 / 2</span>' : '내가 연 연수 보기') + '</p>' +
+      '<h1 class="who-title">' + (isNew ? '연수를 여는 선생님은 누구신가요?' : '어느 선생님이 연 연수를 볼까요?') + '</h1>' +
+      '<p class="who-lead">' + (isNew
+        ? '본인의 교과와 이름을 고르세요. 고른 이름이 이 연수의 담당자가 됩니다.'
+        : '본인의 교과와 이름을 고르세요. 그 이름으로 연 연수를 모두 보여 드립니다.') + '</p>' +
+      '<p class="who-label" id="wd-l">교과/업무</p><div class="chips" id="wd" role="group" aria-labelledby="wd-l"></div>' +
+      '<div class="who-names"><div class="who-names-head"><p class="who-label" id="wn-l">이름</p>' +
+      '<label class="who-search">' + Y.icon('search') + '<span class="sr-only">이름으로 찾기</span>' +
+      '<input id="wq" type="search" autocomplete="off" placeholder="이름으로 찾기"></label></div>' +
+      '<div class="chips" id="wn" role="group" aria-labelledby="wn-l" aria-live="polite"></div></div>' +
+      '</section></div>', 'list');
+
+    function drawDepts() {
+      app.querySelector('#wd').innerHTML = depts.map(function (d) {
+        return '<button type="button" class="chip" data-dept="' + esc(d) + '" aria-pressed="' + (!q && cur === d) + '">' + esc(d) + '</button>';
+      }).join('');
     }
-    app.querySelector('#wq').addEventListener('input', function (e) { q = e.target.value; draw(); });
-    app.querySelector('#wl').addEventListener('click', function (e) {
+    function drawNames() {
+      var box = app.querySelector('#wn'), rows;
+      if (q) rows = list.filter(function (p) { return Y.matchPerson(q, p); });
+      else if (cur) rows = list.filter(function (p) { return (p.dept || '기타') === cur; });
+      else { box.innerHTML = '<p class="who-hint">위에서 교과/업무를 먼저 고르세요.</p>'; return; }
+      box.innerHTML = rows.map(function (p) {
+        var mine = me && me.id === p.id;
+        return '<button type="button" class="chip chip-name' + (mine ? ' is-me' : '') + '" data-id="' + esc(p.id) + '">' + esc(p.name) +
+          (q ? '<span>' + esc(p.dept) + '</span>' : '') + (mine ? '<span>지금 선택</span>' : '') + '</button>';
+      }).join('') || '<p class="who-hint">맞는 이름이 없습니다. 명단에 이름이 없다면 총괄 담당자에게 말씀해 주세요.</p>';
+    }
+    app.querySelector('#wd').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-dept]');
+      if (!b) return;
+      cur = b.getAttribute('data-dept'); q = ''; app.querySelector('#wq').value = '';
+      drawDepts(); drawNames();
+      var first = app.querySelector('#wn .chip');
+      if (first && window.innerWidth < 700) app.querySelector('.who-names').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    app.querySelector('#wq').addEventListener('input', function (e) { q = e.target.value.trim(); drawDepts(); drawNames(); });
+    app.querySelector('#wn').addEventListener('click', function (e) {
       var b = e.target.closest('[data-id]');
       if (!b) return;
       var p = list.filter(function (x) { return x.id === b.getAttribute('data-id'); })[0];
       if (!p) return;
       Auth.set('me', { id: p.id, dept: p.dept, name: p.name });
-      if (location.hash === '#admin') mount(app, 'admin'); else location.hash = '#admin';
+      if (isNew) { A.fromPicker = true; location.hash = '#admin-new'; }
+      else location.hash = '#admin';
     });
-    draw();
-    setTimeout(function () { var i = app.querySelector('#wq'); if (i) i.focus(); }, 30);
+    drawDepts(); drawNames();
   }
 
   /* ================================================================ */
-  /* 첫 화면: 내 연수 / 모든 연수                                         */
+  /* 내 연수 / 모든 연수                                                 */
   /* ================================================================ */
   async function showHome() {
     loadingFrame('list');
@@ -4112,18 +4663,21 @@ var qrcode = function() {
       if (mo !== lastMonth) { rows += '<tr class="ledger-head-month"><td colspan="' + cols + '">' + esc(mo) + '</td></tr>'; lastMonth = mo; }
       rows += '<tr class="clickable" data-go="#admin-s-' + esc(s.id) + '">' +
         '<td class="num" style="width:130px">' + esc(fmt.day(s.date)) + (s.start ? ' <span class="muted">' + esc(s.start) + '</span>' : '') + '</td>' +
-        '<td><a href="#admin-s-' + esc(s.id) + '" class="row-link">' + esc(s.title) + '</a></td>' +
+        '<td><a href="#admin-s-' + esc(s.id) + '" class="row-link">' + esc(s.title) + '</a>' +
+        (s.group ? ' <span class="tag tag-bundle" title="QR 하나로 서명받는 연수">묶음</span>' : '') + '</td>' +
         (master ? '<td style="width:170px">' + (s.manager ? esc(s.manager) : '<span class="muted">정하지 않음</span>') + '</td>' : '') +
         '<td style="width:150px">' + esc(s.place) + '</td>' +
         '<td class="num" style="width:110px">' + s.signed + ' / ' + s.total + '명</td></tr>';
     });
-    var head = '<div class="a-pagehead"><div class="grow"><h1 class="a-h1 doc">' + (master ? '모든 연수' : '내 연수') + '</h1>' +
+    var head = '<div class="a-pagehead"><div class="grow"><h1 class="a-h1">' + (master ? '모든 연수' : '내 연수') + '</h1>' +
       '<p class="a-sub">' + (master ? '학교의 모든 연수입니다. 연수를 누르면 현황을 볼 수 있습니다.' : esc(meText(me)) + ' 선생님이 담당한 연수입니다.') + '</p></div>' +
-      '<div class="a-actions"><a class="btn btn-primary" href="#admin-new">새 연수 만들기</a></div></div>';
+      (list.length ? '<div class="a-actions"><a class="btn btn-primary" href="#admin-new">새 연수 만들기</a></div>' : '') + '</div>';
     var body = list.length
       ? '<div class="sheet table-scroll"><table class="ledger"><thead><tr><th>날짜</th><th>연수명</th>' + (master ? '<th>담당자</th>' : '') +
         '<th>장소</th><th>서명</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
-      : '<div class="sheet sheet-pad"><p class="sheet-title">아직 연수가 없습니다</p><p class="a-sub">[새 연수 만들기]를 누르면 연수와 서명용 QR이 함께 만들어집니다.</p></div>';
+      : '<section class="sheet empty-first"><h2>' + (master ? '아직 만든 연수가 없습니다' : '첫 연수를 만들어 보세요') + '</h2>' +
+        '<p>연수명과 날짜만 넣으면 서명용 QR이 바로 만들어집니다.</p>' + Y.flowSteps() +
+        '<a class="btn btn-primary btn-large" href="#admin-new">새 연수 만들기</a></section>';
     frame(head + body, 'list');
     var tb = app.querySelector('tbody');
     if (tb) tb.addEventListener('click', function (e) {
@@ -4169,8 +4723,11 @@ var qrcode = function() {
       return '<option value="' + esc(p.id) + '"' + (p.id === ownerId ? ' selected' : '') + '>' + esc(meText(p)) + '</option>';
     }).join('');
 
-    frame('<a class="a-back" href="' + backHref + '">‹ ' + (!creating ? '연수 현황' : (isMaster() ? '모든 연수' : '내 연수')) + '</a>' +
-      '<div class="a-pagehead"><div class="grow"><h1 class="a-h1 doc">' + heading + '</h1>' +
+    var fromPicker = A.fromPicker && creating && !copy; A.fromPicker = false;
+    if (fromPicker) backHref = '#admin-who-new';
+    frame('<a class="a-back" href="' + backHref + '">‹ ' + (fromPicker ? '이름 다시 고르기' : !creating ? '연수 현황' : (isMaster() ? '모든 연수' : '내 연수')) + '</a>' +
+      '<div class="a-pagehead"><div class="grow">' + (fromPicker ? '<p class="who-step">새 연수 만들기 <span class="num">2 / 2</span></p>' : '') +
+      '<h1 class="a-h1">' + (fromPicker ? '연수 정보를 입력하세요' : heading) + '</h1>' +
       '<p class="a-sub">입력하는 내용이 오른쪽 등록부에 그대로 들어갑니다. 저장하면 바로 QR로 서명을 받을 수 있습니다.</p></div></div>' +
       '<div class="editor"><form class="sheet sheet-pad form-grid" novalidate>' +
       field('title', '연수명', '<input id="f-title" class="input" maxlength="120" required value="' + esc(d.title) + '" placeholder="예: 2026 교직원 성희롱·성폭력 예방교육">') +
@@ -4179,7 +4736,8 @@ var qrcode = function() {
       field('end', '끝 (선택)', '<input id="f-end" class="input" type="time" value="' + esc(d.end) + '">') + '</div>' +
       '<div class="row-2">' + field('place', '장소 (선택)', '<input id="f-place" class="input" maxlength="60" value="' + esc(d.place) + '" placeholder="예: 시청각실">') +
       field('hours', '이수시간 (선택)', '<div class="inline-num"><input id="f-hours" class="input" inputmode="decimal" value="' + esc(d.hours) + '" style="width:96px"> 시간</div>') + '</div>' +
-      '<div class="row-2">' + field('owner', '담당자', '<select id="f-owner" class="input">' + ownerOptions + '</select>', '이 선생님의 ‘내 연수’에 나옵니다.') +
+      '<div class="row-2">' + field('owner', '담당자', '<select id="f-owner" class="input">' + ownerOptions + '</select>',
+        '이 선생님의 ‘내 연수’에 나옵니다.' + (s && !copy && s.group ? ' 담당자를 바꾸면 QR 묶음에서 빠집니다.' : '')) +
       field('doctitle', '등록부 제목', '<input id="f-doctitle" class="input" maxlength="60" value="' + esc(d.docTitle) + '">') + '</div>' +
       (creating
         ? '<div class="field"><span class="field-label">대상자</span><div class="radio-line">' +
@@ -4348,23 +4906,49 @@ var qrcode = function() {
     return fmt.dateK(s.date) + (s.start ? ' ' + (s.end ? fmt.range(s.start, s.end) : s.start) : '');
   }
 
+  // 이 연수가 다른 연수와 QR 하나로 묶여 있으면 묶음의 연수들 (날짜·시각 순), 아니면 null
+  function bundleOf(s) { return s.groupSessions && s.groupSessions.length > 1 ? s.groupSessions : null; }
+
+  function bundleWhen(x, withDate) {
+    return ((withDate ? fmt.dateK(x.date) : '') + (x.start ? (withDate ? ' ' : '') + x.start : '')).trim();
+  }
+
+  function bundlePanel(s, gs) {
+    var sameDay = gs.every(function (x) { return x.date === gs[0].date; });
+    return '<section class="bundle" aria-labelledby="bd-t"><div class="bundle-main">' +
+      '<h2 id="bd-t">QR 묶음 <span class="num">연수 ' + gs.length + '개</span></h2>' +
+      '<p>아래 연수를 QR 하나로 서명받습니다. 선생님들은 QR을 찍은 뒤 서명할 연수를 골라 한 번에 서명합니다.</p>' +
+      '<ol class="bundle-list">' + gs.map(function (x) {
+        var w = esc(bundleWhen(x, true));
+        return x.id === s.id
+          ? '<li class="is-current"><span class="num">' + w + '</span><b class="doc">' + esc(x.title) + '</b><span class="tag">지금 보는 연수</span></li>'
+          : '<li><span class="num">' + w + '</span><a class="doc" href="#admin-s-' + esc(x.id) + '">' + esc(x.title) + '</a></li>';
+      }).join('') + '</ol>' + (sameDay ? '' : '') + '</div>' +
+      '<div class="bundle-actions"><a class="btn btn-secondary" href="#admin-groster-' + esc(s.id) + '">묶음 등록부 한 번에 인쇄</a>' +
+      '<button type="button" class="btn btn-quiet" data-act="link">묶음 고치기</button></div></section>';
+  }
+
   function renderBoard() {
     var s = A.board.s;
     var created = A.created === s.id;
+    var gs = bundleOf(s);
     frame('<a class="a-back" href="#admin">‹ ' + (isMaster() ? '모든 연수' : '내 연수') + '</a>' +
-      '<div class="a-pagehead"><div class="grow"><h1 class="a-h1 doc">' + esc(s.title) + '</h1>' +
+      '<div class="a-pagehead"><div class="grow"><h1 class="a-h1 a-h1-doc doc">' + esc(s.title) + '</h1>' +
       '<div class="a-meta num" id="meta"></div></div>' +
-      '<div class="a-actions"><button type="button" class="btn btn-secondary" data-act="qr-print">QR 인쇄</button>' +
-      '<button type="button" class="btn btn-quiet" data-act="qr-show">화면에 QR 띄우기</button>' +
+      '<div class="a-actions"><button type="button" class="btn btn-secondary" data-act="qr-print">' + (gs ? '묶음 QR 인쇄' : 'QR 인쇄') + '</button>' +
+      '<button type="button" class="btn btn-quiet" data-act="qr-show">' + (gs ? '묶음 QR 띄우기' : '화면에 QR 띄우기') + '</button>' +
+      (gs ? '' : '<button type="button" class="btn btn-quiet" data-act="link">QR 묶기</button>') +
       '<a class="btn btn-primary" href="#admin-roster-' + esc(s.id) + '">등록부 만들기</a>' +
       '<div class="menu-wrap"><button type="button" class="btn btn-secondary" data-act="more" aria-haspopup="menu" aria-expanded="false">더 보기</button>' +
       '<div class="menu" role="menu" hidden><a role="menuitem" href="#admin-edit-' + esc(s.id) + '">연수 수정</a>' +
       '<a role="menuitem" href="#admin-copy-' + esc(s.id) + '">같은 내용으로 새 연수</a>' +
+      (gs ? '<button type="button" role="menuitem" data-act="qr-one">이 연수 QR만 인쇄</button>' : '') +
       '<button type="button" role="menuitem" class="danger" data-act="delete">연수 삭제</button></div></div></div></div>' +
       (created ? '<section class="created created-simple" aria-labelledby="cr-t"><div class="created-main"><h2 id="cr-t">연수를 만들었습니다</h2>' +
-        '<p>지금부터 QR로 서명을 받을 수 있습니다. QR을 인쇄해 입구에 붙이거나 화면에 띄우세요.</p></div>' +
-        '<div class="created-cta"><button type="button" class="btn btn-primary" data-act="qr-print">QR 인쇄</button></div>' +
+        '<p>지금부터 QR로 서명을 받을 수 있습니다. QR을 인쇄해 입구에 붙이거나 화면에 띄우세요.</p><p class="created-bundle" id="cr-bundle" hidden></p></div>' +
+        '<div class="created-cta"><button type="button" class="btn btn-primary" data-act="qr-print">' + (gs ? '묶음 QR 인쇄' : 'QR 인쇄') + '</button></div>' +
         '<button type="button" class="icon-btn created-close" data-act="close-created" aria-label="안내 닫기">×</button></section>' : '') +
+      (gs ? bundlePanel(s, gs) : '') +
       '<div class="board"><aside class="sheet sheet-pad todo" id="todo" aria-live="polite"></aside>' +
       '<section class="sheet"><div class="table-tools"><div class="seg" role="group" aria-label="보기" id="seg"></div>' +
       '<label class="sr-only" for="tq">이름 검색</label><input id="tq" class="input" type="search" placeholder="이름 검색" autocomplete="off">' +
@@ -4373,8 +4957,25 @@ var qrcode = function() {
       '<tbody id="tb"></tbody></table></div></section></div>', 'list');
 
     app.querySelector('.a-main').addEventListener('click', onBoardClick);
-    app.querySelector('#tq').addEventListener('input', function (e) { A.board.query = e.target.value; renderTable(); });
+    var tq = app.querySelector('#tq');
+    tq.value = A.board.query || '';   // 다시 그려도 검색어 유지
+    tq.addEventListener('input', function (e) { A.board.query = e.target.value; renderTable(); });
     updateBoard();
+    if (created && !gs) suggestBundle(s);
+  }
+
+  // 방금 만든 연수: 같은 담당자의 같은 날 연수가 있으면 묶기를 권합니다.
+  function suggestBundle(s) {
+    if (!s.ownerId) return;
+    var id = s.id;
+    Api.call('sessions.list', isMaster() ? {} : { owner: s.ownerId }).then(function (list) {
+      var same = list.filter(function (x) { return x.id !== id && x.ownerId === s.ownerId && x.date === s.date; });
+      var el = app.querySelector('#cr-bundle');
+      if (!same.length || !el || !A.board || A.board.id !== id) return;
+      el.innerHTML = '같은 담당자의 같은 날 연수가 ' + same.length + '개 더 있습니다. QR 하나로 묶으면 선생님들이 한 번에 서명할 수 있습니다. ' +
+        '<button type="button" class="btn btn-secondary btn-small" data-act="link">QR 묶기</button>';
+      el.hidden = false;
+    }).catch(function () { /* 권하지 못해도 괜찮습니다 */ });
   }
 
   function updateBoard() {
@@ -4460,8 +5061,9 @@ var qrcode = function() {
       if (!A.board || A.board.id !== id || A.ver !== ver || A.pending > 0) return;
       s.records.forEach(function (r) { if (r.signed && !before[r.pid]) A.board.fresh[r.pid] = true; });
       var changed = JSON.stringify(s) !== JSON.stringify(A.board.s);
+      var regroup = JSON.stringify(s.groupSessions || []) !== JSON.stringify(A.board.s.groupSessions || []) || s.title !== A.board.s.title;
       A.board.s = s;
-      if (changed) updateBoard();
+      if (regroup) renderBoard(); else if (changed) updateBoard();
     } catch (e) {
       if (/^AUTH/.test(e.code || '')) authFrame(e);
       else if (e.code === 'NOT_FOUND') { stop(); location.hash = '#admin'; }
@@ -4487,8 +5089,10 @@ var qrcode = function() {
       if (A.board && A.board.id === id && d && d.people && A.pending === 0) {
         A.ver++;
         var same = JSON.stringify(d) === JSON.stringify(A.board.s);
+        var regroup = JSON.stringify(d.groupSessions || []) !== JSON.stringify(A.board.s.groupSessions || []);
         A.board.s = d;
-        if (!same) updateBoard();   // 미리 바꾼 화면과 같으면 다시 그리지 않습니다 (누르려던 버튼이 사라지지 않게)
+        if (regroup) renderBoard();
+        else if (!same) updateBoard();   // 미리 바꾼 화면과 같으면 다시 그리지 않습니다 (누르려던 버튼이 사라지지 않게)
       }
     }).catch(function (e) {
       A.pending--;
@@ -4522,8 +5126,10 @@ var qrcode = function() {
     if (t.hasAttribute('data-filter')) { A.board.filter = t.getAttribute('data-filter'); updateBoard(); return; }
     var act = t.getAttribute('data-act'), pid = t.getAttribute('data-pid'), s = A.board.s;
     if (act === 'more') { toggleMenu(menu.hidden); return; }
-    if (act === 'qr-show') return openStage(s);
-    if (act === 'qr-print') return Y.printHtml(posterHtml(s));
+    if (act === 'qr-show') return openStage(s, bundleOf(s));
+    if (act === 'qr-print') return Y.printHtml(bundleOf(s) ? groupPosterHtml(s, bundleOf(s)) : posterHtml(s));
+    if (act === 'qr-one') return Y.printHtml(posterHtml(s));
+    if (act === 'link') return openLink();
     if (act === 'close-created') { A.created = null; var c = app.querySelector('.created'); if (c) c.remove(); return; }
     if (act === 'delete') return deleteSession(s);
     if (act === 'row-menu') return openRowMenu(t, personById(pid));
@@ -4582,7 +5188,8 @@ var qrcode = function() {
     var M = boardModel();
     var ok = await Y.confirmBox({
       title: '연수를 삭제할까요?',
-      body: '‘' + s.title + '’ 연수와 서명 ' + M.signed + '개가 모두 지워지고, 이 연수의 QR도 더 이상 열리지 않습니다. 지운 뒤에는 되돌릴 수 없습니다.',
+      body: '‘' + s.title + '’ 연수와 서명 ' + M.signed + '개가 모두 지워지고, 이 연수의 QR도 더 이상 열리지 않습니다. ' +
+        (bundleOf(s) ? 'QR 묶음에서도 빠집니다(다른 연수는 그대로). ' : '') + '지운 뒤에는 되돌릴 수 없습니다.',
       ok: '연수 삭제', kind: 'danger'
     });
     if (!ok) return;
@@ -4596,11 +5203,18 @@ var qrcode = function() {
 
   function onsiteSign(p) {
     if (!p) return;
-    var pad = null;
+    var pad = null, cur = A.board.s;
+    var gs = bundleOf(cur);
+    var opts = gs ? gs.filter(function (x) { return x.pids.indexOf(p.id) >= 0; }) : [];
+    if (opts.length < 2) opts = [];
     Y.modal({
       title: p.name + ' 선생님 현장 서명', wide: true, sticky: true,
       html: '<p style="margin-bottom:12px">휴대폰이 없거나 QR로 서명하지 못한 선생님께 이 화면에서 바로 서명을 받습니다.</p>' +
         '<table class="form-row"><thead><tr><th style="width:18%">연번</th><th>교과/업무</th><th>성명</th></tr></thead><tbody><tr><td class="num">' + p.no + '</td><td>' + esc(p.dept) + '</td><td>' + esc(p.name) + '</td></tr></tbody></table>' +
+        (opts.length ? '<div class="field onsite-sids"><span class="field-label">서명을 넣을 연수</span>' + opts.map(function (x) {
+          return '<label class="pick-row"><input type="checkbox" value="' + esc(x.id) + '" checked> <b class="doc">' + esc(x.title) + '</b> <span class="muted num">' +
+            esc(bundleWhen(x, true)) + '</span>' + (x.id === cur.id ? ' <span class="tag">이 연수</span>' : '') + '</label>';
+        }).join('') + '</div>' : '') +
         '<div id="mpad"></div><p style="margin-top:8px"><button type="button" class="btn btn-quiet btn-small" data-act="mclear">다시 쓰기</button></p>',
       onOpen: function (m) {
         pad = Y.createPad(m.el.querySelector('#mpad'));
@@ -4608,17 +5222,33 @@ var qrcode = function() {
       },
       onClose: function () { if (pad) pad.destroy(); },
       actions: [{ label: '취소' }, {
-        label: '서명 등록', kind: 'primary', onClick: function () {
+        label: '서명 등록', kind: 'primary', onClick: function (m) {
+          var sids = null;
+          if (opts.length) {
+            sids = Array.prototype.map.call(m.el.querySelectorAll('.onsite-sids input:checked'), function (i) { return i.value; });
+            if (!sids.length) throw new Error('서명을 넣을 연수를 하나 이상 골라 주세요.');
+          }
           if (!pad.isEnough()) throw new Error('서명 칸에 이름을 써 주세요.');
           var sig = pad.export();
           if (!sig) throw new Error('서명을 읽지 못했습니다. 다시 써 주세요.');
           var id = A.board.id;
+          var here = !sids || sids.indexOf(id) >= 0;
           optimistic(function (s) {
+            if (!here) return;
             var r = recOf(s, p.id); r.signed = true; r.method = '현장';
             A.imgs[id][p.id] = sig; A.board.fresh[p.id] = true;
           }, function () {
-            return Api.call('sig.adminSign', { id: id, pid: p.id, sig: sig });
-          }, p.name + ' 선생님 서명을 등록했습니다.');
+            var body = { id: id, pid: p.id, sig: sig };
+            if (sids) body.sids = sids;
+            return Api.call('sig.adminSign', body).then(function (d) {
+              if (d && d.skipped && d.skipped.length) {
+                setTimeout(function () {
+                  Y.toast('‘' + d.skipped.map(function (x) { return x.title; }).join('’, ‘') + '’에는 이미 서명이 있거나 대상이 아니어서 넣지 않았습니다.');
+                }, 1600);
+              }
+              return d;
+            });
+          }, sids && sids.length > 1 ? p.name + ' 선생님 서명을 연수 ' + sids.length + '개에 등록했습니다.' : p.name + ' 선생님 서명을 등록했습니다.');
         }
       }]
     });
@@ -4762,10 +5392,76 @@ var qrcode = function() {
     });
   }
 
+  /* ---------- QR 묶기: 같은 담당자의 연수를 골라 QR 하나로 (날짜 상관없음) ---------- */
+  function openLink() {
+    var s = A.board.s, id = s.id;
+    if (!s.ownerId) { Y.toast('담당자가 정해지지 않은 연수는 묶을 수 없습니다. [연수 수정]에서 담당자를 먼저 정해 주세요.'); return; }
+    var gs = bundleOf(s), inGroup = {};
+    (gs || []).forEach(function (x) { inGroup[x.id] = true; });
+    var loaded = false;
+    var actions = [{ label: '취소' }];
+    if (gs) actions.push({
+      label: '묶음 풀기', kind: 'secondary', busy: '푸는 중…', onClick: async function () {
+        await saveLink(id, { dissolve: true });
+        Y.toast('묶음을 풀었습니다. 연수마다 따로 QR을 쓰면 됩니다.');
+      }
+    });
+    actions.push({
+      label: '저장', kind: 'primary', busy: '저장하는 중…', onClick: async function (m) {
+        if (!loaded) throw new Error('연수 목록을 불러오는 중입니다. 잠시 후 다시 눌러 주세요.');
+        var ids = Array.prototype.map.call(m.el.querySelectorAll('#lk-list input[data-sid]:checked'), function (i) { return i.getAttribute('data-sid'); });
+        if (!ids.length && !gs) throw new Error('함께 묶을 연수를 하나 이상 골라 주세요.');
+        var d = await saveLink(id, { ids: ids });
+        var n = (bundleOf(d) || []).length;
+        Y.toast(n ? '연수 ' + n + '개를 QR 하나로 묶었습니다. [묶음 QR 인쇄]로 뽑아 주세요.' : '이 연수를 묶음에서 뺐습니다.');
+      }
+    });
+    Y.modal({
+      title: gs ? '묶음 고치기' : 'QR 묶기', wide: true,
+      html: '<p style="margin-bottom:6px">고른 연수를 QR 하나로 서명받습니다. 선생님들은 QR을 찍은 뒤 서명할 연수를 골라 한 번에 서명합니다.</p>' +
+        '<p class="help" style="margin-bottom:12px">같은 담당자' + (s.manager ? '(' + esc(s.manager) + ')' : '') + '의 연수만 묶을 수 있습니다. 시간이 떨어진 연수(오전·오후)는 따로 두세요.</p>' +
+        '<div class="pick-list link-list" id="lk-list"><p class="help" style="padding:10px 4px">연수 목록을 불러오는 중…</p></div>',
+      onOpen: function (m) {
+        Api.call('sessions.list', isMaster() ? {} : { owner: s.ownerId }).then(function (list) {
+          var box = m.el.querySelector('#lk-list');
+          if (!box) return;
+          var others = list.filter(function (x) { return x.id !== id && x.ownerId === s.ownerId; });
+          var same = others.filter(function (x) { return x.date === s.date; }).sort(function (a, b) { return (a.start || '').localeCompare(b.start || ''); });
+          var rest = others.filter(function (x) { return x.date !== s.date; });
+          function row(x, self) {
+            return '<label class="pick-row link-row' + (self ? ' is-self' : '') + '"><input type="checkbox"' + (self ? ' checked disabled' : ' data-sid="' + esc(x.id) + '"' + (inGroup[x.id] ? ' checked' : '')) + '>' +
+              '<span class="num lk-when">' + esc(bundleWhen(x, true) || fmt.dateK(x.date)) + '</span><b class="doc">' + esc(x.title) + '</b>' +
+              (self ? '<span class="tag">이 연수</span>' : x.group && !inGroup[x.id] ? '<span class="tag">다른 묶음에서 옮김</span>' : '') + '</label>';
+          }
+          box.innerHTML = row(s, true) +
+            (same.length ? '<div class="todo-group">같은 날 연수</div>' + same.map(function (x) { return row(x); }).join('') : '') +
+            (rest.length ? '<div class="todo-group">다른 날 연수</div>' + rest.map(function (x) { return row(x); }).join('') : '') +
+            (others.length ? '' : '<p class="help" style="padding:10px 4px">이 담당자의 다른 연수가 없습니다. 연수를 더 만든 뒤 묶을 수 있습니다.</p>');
+          loaded = true;
+        }).catch(function (e) {
+          var box = m.el.querySelector('#lk-list');
+          if (box) box.innerHTML = '<p class="form-error" style="padding:10px 4px">' + esc(e.message) + '</p>';
+        });
+      },
+      actions: actions
+    });
+  }
+
+  async function saveLink(id, body) {
+    var d;
+    try { d = await queued(function () { return Api.call('sessions.link', Object.assign({ id: id }, body)); }); }
+    catch (e) {
+      if (/^AUTH/.test(e.code || '')) { var b = document.querySelector('.modal-backdrop'); if (b) b.remove(); authFrame(e); }
+      throw e;
+    }
+    if (A.board && A.board.id === id) { A.ver++; A.board.s = d; A.created = null; renderBoard(); }
+    return d;
+  }
+
   /* ---------- QR ---------- */
-  function openStage(s) {
+  function openStage(s, gs) {
     closeStage();
-    var url = Y.signUrl(s.id);
+    var url = gs ? Y.groupUrl(s.group) : Y.signUrl(s.id);
     var M = boardModel();
     var el = document.createElement('div');
     el.className = 'qr-stage';
@@ -4773,10 +5469,11 @@ var qrcode = function() {
     el.setAttribute('aria-label', 'QR 크게 보기');
     el.innerHTML = '<div class="close"><button type="button" class="btn btn-secondary" data-st="full">전체 화면</button>' +
       '<button type="button" class="btn btn-secondary" data-st="close">닫기</button></div>' +
-      '<p class="school">' + esc(Y.CFG.school) + '</p><h1 class="ttl doc">' + esc(s.title) + '</h1><p class="when-l">' + esc(fmt.dateLong(s.date)) + '</p>' +
+      '<p class="school stage-brand">' + Y.logo() + '<span>' + esc(Y.CFG.school) + '</span></p>' +
+      (gs ? stageTitles(gs) : '<h1 class="ttl doc">' + esc(s.title) + '</h1><p class="when-l">' + esc(fmt.dateLong(s.date)) + '</p>') +
       '<div class="qr">' + Y.qrSvg(url) + '</div><p class="how">휴대폰 카메라로 QR을 찍고 서명해 주세요</p>' +
-      '<p class="live num" aria-live="polite">지금까지 ' + M.signed + '명 서명</p>' +
-      (Y.DEMO ? '<p><a class="btn btn-quiet" href="#s-' + esc(s.id) + '">체험판: 이 컴퓨터에서 서명 화면 열기</a></p>' : '');
+      (gs ? '' : '<p class="live num" aria-live="polite">지금까지 ' + M.signed + '명 서명</p>') +
+      (Y.DEMO ? '<p><a class="btn btn-quiet" href="' + (gs ? '#g-' + esc(s.group) : '#s-' + esc(s.id)) + '">체험판: 이 컴퓨터에서 서명 화면 열기</a></p>' : '');
     document.body.appendChild(el);
     el.querySelector('[data-st="close"]').addEventListener('click', closeStage);
     el.querySelector('[data-st="full"]').addEventListener('click', function () {
@@ -4796,12 +5493,40 @@ var qrcode = function() {
     if (document.fullscreenElement && document.exitFullscreen) { try { document.exitFullscreen(); } catch (e) { /* ignore */ } }
   }
 
+  function stageTitles(gs) {
+    var sameDay = gs.every(function (x) { return x.date === gs[0].date; });
+    return (sameDay ? '<p class="when-l">' + esc(fmt.dateLong(gs[0].date)) + '</p>' : '') +
+      '<ol class="ttl-list">' + gs.map(function (x) {
+        var w = bundleWhen(x, !sameDay);
+        return '<li><span class="t doc">' + esc(x.title) + '</span>' + (w ? '<span class="tm num">' + esc(w) + '</span>' : '') + '</li>';
+      }).join('') + '</ol>';
+  }
+
+  // 묶음 QR 포스터: 연수 목록 + QR 하나 (연수가 많으면 QR을 조금 줄여 A4 한 장에)
+  function groupPosterHtml(s, gs) {
+    var url = Y.groupUrl(s.group);
+    var n = gs.length;
+    var sameDay = gs.every(function (x) { return x.date === gs[0].date; });
+    // QR은 남는 높이에 맞춰 줄어듭니다 (CSS). 연수가 많으면 제목 글자도 조금 작게.
+    return '<section class="a4"><div class="qr-poster qr-poster-group' + (n >= 4 ? ' many' : '') + '"><p class="school">' + esc(Y.CFG.school) + '</p>' +
+      (sameDay ? '<p class="when">' + esc(fmt.dateLong(gs[0].date)) + '</p>' : '') +
+      '<ol class="ttl-list">' + gs.map(function (x) {
+        var w = bundleWhen(x, !sameDay);
+        return '<li><span class="t">' + esc(x.title) + '</span>' + (w ? '<span class="tm">' + esc(w) + '</span>' : '') + '</li>';
+      }).join('') + '</ol>' +
+      '<div class="qr"><div class="qr-box">' + Y.qrSvg(url) + '</div></div>' +
+      '<p class="how">휴대폰 카메라로 QR을 찍고 서명해 주세요</p>' +
+      '<p class="sub">앱 설치나 로그인 없이 바로 서명할 수 있습니다</p><p class="url">' + esc(url) + '</p>' +
+      '<p class="brand">' + Y.logo() + '<span>' + esc(Y.APP_NAME) + '</span></p></div></section>';
+  }
+
   function posterHtml(s) {
     var url = Y.signUrl(s.id);
     return '<section class="a4"><div class="qr-poster"><p class="school">' + esc(Y.CFG.school) + '</p>' +
       '<h1 class="ttl">' + esc(s.title) + '</h1><p class="when">' + esc(fmt.dateLong(s.date)) + '</p>' +
       '<div class="qr">' + Y.qrSvg(url) + '</div><p class="how">휴대폰 카메라로 QR을 찍고 서명해 주세요</p>' +
-      '<p class="sub">앱 설치나 로그인 없이 바로 서명할 수 있습니다</p><p class="url">' + esc(url) + '</p></div></section>';
+      '<p class="sub">앱 설치나 로그인 없이 바로 서명할 수 있습니다</p><p class="url">' + esc(url) + '</p>' +
+      '<p class="brand">' + Y.logo() + '<span>' + esc(Y.APP_NAME) + '</span></p></div></section>';
   }
 
   /* ================================================================ */
@@ -4821,7 +5546,7 @@ var qrcode = function() {
     s.records.forEach(function (r) { recs[r.pid] = r; });
     var signed = s.records.filter(function (r) { return r.signed; }).length;
     frame('<a class="a-back" href="#admin-s-' + esc(id) + '">‹ 연수 현황</a>' +
-      '<div class="a-pagehead"><div class="grow"><h1 class="a-h1 doc">등록부 미리보기</h1><p class="a-sub">' + esc(s.title) + ', ' + signed + ' / ' + s.people.length + '명 서명</p></div></div>' +
+      '<div class="a-pagehead"><div class="grow"><h1 class="a-h1">등록부 미리보기</h1><p class="a-sub">' + esc(s.title) + ', ' + signed + ' / ' + s.people.length + '명 서명</p></div></div>' +
       '<div class="roster-tools"><div class="opts">' +
       '<label><input type="checkbox" id="o-notes"' + (opts.showNotes ? ' checked' : '') + '> 비고란에 불참 사유 넣기</label>' +
       '<label><input type="checkbox" id="o-info"' + (opts.showInfo ? ' checked' : '') + '> 일시·장소·이수시간 줄 넣기</label></div>' +
@@ -4833,6 +5558,50 @@ var qrcode = function() {
       var el = app.querySelector('#pages');
       el.innerHTML = Y.rosterPages(s, s.people, recs, imgs, opts);
       Y.fitRoster(el);
+    }
+    app.querySelector('#o-notes').addEventListener('change', function (e) { opts.showNotes = e.target.checked; Y.store.setJSON('yeonsu-roster-opts', opts); draw(); });
+    app.querySelector('#o-info').addEventListener('change', function (e) { opts.showInfo = e.target.checked; Y.store.setJSON('yeonsu-roster-opts', opts); draw(); });
+    app.querySelector('[data-act="print"]').addEventListener('click', function () { Y.printHtml(app.querySelector('#pages').innerHTML); });
+    draw();
+  }
+
+  /* ---------- 묶음 등록부 한 번에 인쇄 ---------- */
+  async function showGroupRoster(id) {
+    loadingFrame('list');
+    await A.chain;
+    var base, sets;
+    try {
+      base = await Api.call('sessions.get', { id: id });
+      var gs = bundleOf(base) || [{ id: base.id }];
+      sets = await Promise.all(gs.map(function (x) {
+        return Promise.all([x.id === base.id ? base : Api.call('sessions.get', { id: x.id }), Api.call('sig.images', { id: x.id })]);
+      }));
+    } catch (e) { return errorFrame(e, function () { showGroupRoster(id); }, 'list'); }
+    if (location.hash !== '#admin-groster-' + id) return;
+    var opts = Y.store.getJSON('yeonsu-roster-opts', { showNotes: true, showInfo: false });
+    var total = 0;
+    frame('<a class="a-back" href="#admin-s-' + esc(id) + '">‹ 연수 현황</a>' +
+      '<div class="a-pagehead"><div class="grow"><h1 class="a-h1">묶음 등록부 미리보기</h1><p class="a-sub">연수 ' + sets.length + '개의 등록부를 차례로 한 번에 인쇄합니다.</p>' +
+      '<ul class="bundle-sum">' + sets.map(function (x) {
+        var s = x[0], signed = s.records.filter(function (r) { return r.signed; }).length;
+        return '<li><b class="doc">' + esc(s.title) + '</b><span class="num">' + signed + ' / ' + s.people.length + '명 서명</span></li>';
+      }).join('') + '</ul></div></div>' +
+      '<div class="roster-tools"><div class="opts">' +
+      '<label><input type="checkbox" id="o-notes"' + (opts.showNotes ? ' checked' : '') + '> 비고란에 불참 사유 넣기</label>' +
+      '<label><input type="checkbox" id="o-info"' + (opts.showInfo ? ' checked' : '') + '> 일시·장소·이수시간 줄 넣기</label></div>' +
+      '<button type="button" class="btn btn-primary" data-act="print" style="margin-left:auto">인쇄 / PDF 저장</button>' +
+      '<p class="hint" id="g-hint"></p></div>' +
+      '<div class="pages" id="pages"></div>', 'list');
+    function draw() {
+      var el = app.querySelector('#pages');
+      el.innerHTML = sets.map(function (x) {
+        var s = x[0], recs = {};
+        s.records.forEach(function (r) { recs[r.pid] = r; });
+        return Y.rosterPages(s, s.people, recs, x[1] || {}, opts);
+      }).join('');
+      Y.fitRoster(el);
+      total = el.querySelectorAll('.a4').length;
+      app.querySelector('#g-hint').textContent = '모두 ' + total + '장입니다. 인쇄 창에서 용지는 A4, 배율은 100%(기본값)로 두세요. 언제든 다시 인쇄할 수 있습니다.';
     }
     app.querySelector('#o-notes').addEventListener('change', function (e) { opts.showNotes = e.target.checked; Y.store.setJSON('yeonsu-roster-opts', opts); draw(); });
     app.querySelector('#o-info').addEventListener('change', function (e) { opts.showInfo = e.target.checked; Y.store.setJSON('yeonsu-roster-opts', opts); draw(); });
@@ -4863,7 +5632,7 @@ var qrcode = function() {
     try { L = await Api.call('links.get', { site: Y.siteBase() }); } catch (e) { return errorFrame(e, showLinks, 'links'); }
     function urlOf(kind) { return kind === 'master' ? Y.masterUrl(L.master) : Y.staffUrl(L.staff); }
     function render() {
-      frame('<div class="a-pagehead"><div class="grow"><h1 class="a-h1 doc">링크 관리</h1>' +
+      frame('<div class="a-pagehead"><div class="grow"><h1 class="a-h1">링크 관리</h1>' +
         '<p class="a-sub">비밀번호 대신 바로가기로 권한을 나눕니다. 바로가기 파일에는 주소 한 줄만 들어 있어서, 프로그램을 고쳐도 다시 나눠 줄 필요가 없습니다.</p></div></div>' +
         linkSection('staff', urlOf('staff')) + linkSection('master', urlOf('master')), 'links');
     }
@@ -4919,7 +5688,7 @@ var qrcode = function() {
 
   /* ---------- 총괄 열쇠 직접 넣기 (처음 설치할 때, 바로가기를 잃어버렸을 때) ---------- */
   function showMasterKey() {
-    simple('<h1 class="a-h1 doc">총괄 열쇠로 들어가기</h1>' +
+    simple('<h1 class="a-h1">총괄 열쇠로 들어가기</h1>' +
       '<p class="a-sub" style="margin:6px 0 18px">구글 시트의 ‘설정’ 시트에 있는 <b>총괄 열쇠</b> 값을 붙여넣으세요.</p>' +
       '<form novalidate class="form-grid"><div class="field"><label for="mk">총괄 열쇠</label><input id="mk" class="input" autocomplete="off" spellcheck="false"></div>' +
       '<p class="form-error" role="alert" hidden></p><div class="form-foot"><button class="btn btn-primary" data-busy="확인 중…">들어가기</button>' +
@@ -4953,7 +5722,7 @@ var qrcode = function() {
     loadingFrame('staff');
     try { A.staff = (await staffList(true)).map(function (p) { return Object.assign({}, p); }); } catch (e) { return errorFrame(e, showStaff, 'staff'); }
     A.staffDirty = false;
-    frame('<div class="a-pagehead"><div class="grow"><h1 class="a-h1 doc">교직원 명단</h1>' +
+    frame('<div class="a-pagehead"><div class="grow"><h1 class="a-h1">교직원 명단</h1>' +
       '<p class="a-sub">새 연수를 만들 때 이 명단에서 대상자를 불러오고, 연수 담당자도 이 명단에서 이름을 고릅니다. 명단을 바꿔도 이미 만든 연수의 대상자와 등록부는 그대로입니다.</p></div>' +
       '<div class="a-actions"><button type="button" class="btn btn-secondary" data-act="paste">엑셀에서 붙여넣기</button>' +
       '<button type="button" class="btn btn-secondary" data-act="add">한 명 추가</button>' +
