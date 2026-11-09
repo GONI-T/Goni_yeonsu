@@ -327,8 +327,8 @@ body.is-admin { background: var(--desk); }
 .seg button[aria-pressed="true"] { background: var(--pen-tint); color: var(--pen); }
 
 /* 현황 layout */
-.board { display: grid; grid-template-columns: 340px 1fr; gap: 20px; align-items: start; }
-@media (max-width: 960px) { .board { grid-template-columns: 1fr; } }
+.board { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 960px) { .board { grid-template-columns: minmax(0, 1fr); } }
 .todo h2 { font-size: 17px; font-weight: 700; }
 .todo .count { font-size: 15px; color: var(--pencil); margin-top: 2px; }
 .progress { height: 6px; background: var(--rule-soft); border-radius: 3px; overflow: hidden; margin: 14px 0 6px; }
@@ -526,6 +526,43 @@ input[type="radio"], input[type="checkbox"] { accent-color: var(--pen); width: 1
 .row-menu { position: fixed; right: auto; top: 0; z-index: 60; min-width: 170px; }
 .qr-stage .when-l { font-size: clamp(16px, 1.8vw, 24px); color: var(--pencil); margin-top: -0.6vh; }
 .help { font-size: 13px; color: var(--pencil); line-height: 1.6; }
+
+/* 아래에서 올라오는 확인 창 (휴대폰) */
+.modal-backdrop.is-sheet { align-items: flex-end; padding: 0; }
+.modal-sheet {
+  max-width: 480px; border-radius: 18px 18px 0 0; padding: 26px 22px calc(18px + env(safe-area-inset-bottom));
+  animation: sheet-up .22s cubic-bezier(.2, .8, .2, 1);
+}
+@media (min-width: 640px) {
+  .modal-backdrop.is-sheet { align-items: center; padding: 20px; }
+  .modal-sheet { border-radius: var(--radius-sheet); }
+}
+@keyframes sheet-up { from { transform: translateY(40px); opacity: .4; } to { transform: none; opacity: 1; } }
+.modal-sheet .modal-actions { display: flex; gap: 10px; margin-top: 22px; }
+.modal-sheet .modal-actions .btn { min-height: 54px; font-size: 17px; flex: 1; }
+.modal-sheet .modal-actions .btn-primary { flex: 1.4; }
+.modal-sheet h2 { font-size: 20px; }
+.modal-sheet .modal-body { font-size: 16px; }
+.cf-lead { font-size: 15px; color: var(--pencil); }
+.cf-name { font-size: 34px; font-weight: 700; color: var(--ink); line-height: 1.25; margin-top: 10px; letter-spacing: -0.01em; }
+.cf-sub { font-size: 16px; color: var(--pencil); margin-top: 4px; }
+.t-done h1 { font-weight: 600; }
+.t-done h1 b { font-weight: 800; }
+
+/* 등록부 일시 줄: 항목 사이 간격 유지 */
+.f-info { white-space: pre; }
+
+/* 담당자 이름 */
+.a-me { display: flex; align-items: center; gap: 4px; font-size: 14px; color: var(--pencil); margin-left: 8px; padding-left: 12px; border-left: 1px solid var(--rule); }
+.a-me b { color: var(--ink); font-weight: 700; }
+.who-list { max-width: 640px; }
+.who-list .t-person .nm { font-size: 17px; }
+.created-simple { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+@media (max-width: 900px) { .created-simple { grid-template-columns: 1fr; } }
+.links-sec .linkbox { flex-wrap: wrap; }
+.links-sec .linkbox .input { flex-basis: 320px; }
+.links-sec .help .btn { margin-left: 4px; }
+.table-scroll { position: relative; }   /* 화면 읽기용 숨은 글자가 휴대폰 화면을 옆으로 밀지 않게 */
 
 </style>
 <script src="config.js"></script>
@@ -2938,9 +2975,10 @@ var qrcode = function() {
 
   function modal(opts) {
     var back = document.createElement('div');
-    back.className = 'modal-backdrop';
-    back.innerHTML = '<div class="modal' + (opts.wide ? ' modal-wide' : '') + '" role="dialog" aria-modal="true" aria-labelledby="mdl-t">' +
-      '<h2 id="mdl-t">' + esc(opts.title) + '</h2>' +
+    back.className = 'modal-backdrop' + (opts.sheet ? ' is-sheet' : '');
+    back.innerHTML = '<div class="modal' + (opts.wide ? ' modal-wide' : '') + (opts.sheet ? ' modal-sheet' : '') + '" role="dialog" aria-modal="true"' +
+      (opts.title ? ' aria-labelledby="mdl-t"' : ' aria-label="' + esc(opts.label || '') + '"') + '>' +
+      (opts.title ? '<h2 id="mdl-t">' + esc(opts.title) + '</h2>' : '') +
       '<div class="modal-body">' + (opts.html || (opts.body ? '<p>' + esc(opts.body) + '</p>' : '')) + '</div>' +
       '<div class="modal-error form-error" role="alert" hidden></div>' +
       '<div class="modal-actions"></div></div>';
@@ -3016,74 +3054,39 @@ var qrcode = function() {
     });
   }
 
-  /* ---------------- 권한 (링크 열쇠를 이 브라우저에 기억) ---------------- */
-  var KEEP_DAYS = 120;
+  /* ---------------- 권한: 바로가기 링크 속 열쇠와 고른 이름 ----------------
+   * 기기에 오래 남기지 않습니다. 이 브라우저 탭을 닫으면 잊습니다(sessionStorage). */
   var Auth = (function () {
-    var K = 'yeonsu-auth';
-    var volatile = { master: '', create: '', sessions: {} };   // '이 컴퓨터에서 지우기' 후에도 지금 창에서만 쓰는 열쇠
+    var K = 'yeonsu-session', memo = null;
     function load() {
-      var d = store.getJSON(K, null) || {};
-      d.sessions = d.sessions || {};
-      var limit = Date.now() - KEEP_DAYS * 86400000, changed = false;
-      ['master', 'create'].forEach(function (k) { if (d[k] && d[k].used < limit) { delete d[k]; changed = true; } });
-      Object.keys(d.sessions).forEach(function (sid) { if (d.sessions[sid].used < limit) { delete d.sessions[sid]; changed = true; } });
-      if (changed) store.setJSON(K, d);
-      return d;
+      try { var v = global.sessionStorage.getItem(K); if (v) return JSON.parse(v); } catch (e) { /* ignore */ }
+      return memo || {};
     }
-    function save(d) { store.setJSON(K, d); }
-    var A = {
-      master: function () { var d = load(); return (d.master && d.master.key) || volatile.master; },
-      create: function () { var d = load(); return (d.create && d.create.key) || volatile.create; },
-      key: function (sid) { var d = load(); return (d.sessions[sid] && d.sessions[sid].key) || volatile.sessions[sid] || ''; },
-      sessionKeys: function () {
-        var d = load(), out = {};
-        Object.keys(volatile.sessions).forEach(function (sid) { out[sid] = volatile.sessions[sid]; });
-        Object.keys(d.sessions).forEach(function (sid) { out[sid] = d.sessions[sid].key; });
-        return out;
-      },
-      setMaster: function (k) { var d = load(); d.master = { key: k, used: Date.now() }; save(d); },
-      setCreate: function (k) { var d = load(); d.create = { key: k, used: Date.now() }; save(d); },
-      setSession: function (sid, k) { var d = load(); d.sessions[sid] = { key: k, used: Date.now() }; save(d); },
-      touch: function (sid) {
-        var d = load(), t = Date.now();
-        if (d.master) d.master.used = t;
-        if (d.create) d.create.used = t;
-        if (sid && d.sessions[sid]) d.sessions[sid].used = t;
-        save(d);
-      },
-      remembered: function (kind, sid) {
-        var d = load();
-        return kind === 'session' ? !!d.sessions[sid] : !!d[kind];
-      },
-      // 이 컴퓨터에서 지우기: 저장은 지우고 지금 창에서는 계속 쓸 수 있게
-      forget: function (kind, sid) {
-        var d = load();
-        if (kind === 'session') { if (d.sessions[sid]) volatile.sessions[sid] = d.sessions[sid].key; delete d.sessions[sid]; }
-        else if (d[kind]) { volatile[kind] = d[kind].key; delete d[kind]; }
-        save(d);
-      },
-      drop: function (kind, sid) {
-        var d = load();
-        if (kind === 'session') { delete d.sessions[sid]; delete volatile.sessions[sid]; }
-        else { delete d[kind]; volatile[kind] = ''; }
-        save(d);
-      },
-      forgetAll: function () {
-        var d = load();
-        if (d.master) volatile.master = d.master.key;
-        if (d.create) volatile.create = d.create.key;
-        Object.keys(d.sessions).forEach(function (sid) { volatile.sessions[sid] = d.sessions[sid].key; });
-        store.del(K);
-      },
-      creds: function (sid) {
-        var o = {}, m = A.master(), c = A.create(), k = sid ? A.key(sid) : '';
-        if (m) o.master = m;
-        if (c) o.create = c;
-        if (k) o.key = k;
+    function save(d) {
+      memo = d;
+      try { global.sessionStorage.setItem(K, JSON.stringify(d)); } catch (e) { /* ignore */ }
+    }
+    return {
+      master: function () { return load().master || ''; },
+      staff: function () { return load().staff || ''; },
+      me: function () { return load().me || null; },          // { id, dept, name }
+      set: function (k, v) { var d = load(); if (v) d[k] = v; else delete d[k]; save(d); },
+      clear: function () { save({}); },
+      creds: function () {
+        var d = load(), o = {};
+        if (d.master) o.master = d.master;
+        if (d.staff) o.staff = d.staff;
         return o;
       }
     };
-    return A;
+  })();
+
+  // 예전 버전이 기기에 남긴 기억은 지웁니다.
+  (function cleanupOld() {
+    try {
+      ['yeonsu-auth', 'yeonsu-last-manager', 'yeonsu-token', 'yeonsu-device'].forEach(function (k) { global.localStorage.removeItem(k); });
+      Object.keys(global.localStorage).forEach(function (k) { if (k.indexOf('yeonsu-done-') === 0) global.localStorage.removeItem(k); });
+    } catch (e) { /* ignore */ }
   })();
 
   /* ---------------- API ---------------- */
@@ -3092,10 +3095,9 @@ var qrcode = function() {
 
   var Api = {
     demo: DEMO,
-    // 연수 하나에 관한 요청이면 opts.id 의 관리 열쇠를 함께 보냅니다.
     call: async function (action, payload) {
       payload = payload || {};
-      var body = Object.assign({ action: action }, Auth.creds(payload.id), payload);
+      var body = Object.assign({ action: action }, Auth.creds(), payload);
       if (DEMO) {
         await sleep(120 + Math.random() * 160);
         try {
@@ -3226,9 +3228,29 @@ var qrcode = function() {
     return base;
   }
   function signUrl(id) { return siteBase() + (id ? '#s-' + id : ''); }
-  function manageUrl(id, key) { return siteBase() + '#m-' + id + '-' + key; }
-  function createUrl(key) { return siteBase() + '#new-' + key; }
+  function staffUrl(key) { return siteBase() + '#staff-' + key; }
   function masterUrl(key) { return siteBase() + '#master-' + key; }
+
+  // 바탕화면에 두는 바로가기 파일. 안에는 '이 주소로 가라'는 내용만 있어서 프로그램을 고쳐도 계속 쓸 수 있습니다.
+  function shortcutHtml(url, title) {
+    return '<!DOCTYPE html>\n<html lang="ko"><head><meta charset="utf-8"><title>' + esc(title) + '</title>' +
+      '<meta http-equiv="refresh" content="0; url=' + esc(url) + '">' +
+      '<script>location.replace(' + JSON.stringify(url) + ');<\/script></head>' +
+      '<body style="font-family:sans-serif;padding:24px"><p><a href="' + esc(url) + '">' + esc(title) + ' 열기</a></p></body></html>\n';
+  }
+  function downloadShortcut(filename, url, title) {
+    try {
+      var blob = new Blob([shortcutHtml(url, title)], { type: 'text/html;charset=utf-8' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+      if (inFrame()) toast('미리보기 화면에서는 파일 내려받기가 막혀 있을 수 있습니다. 실제 사이트에서는 내려받아집니다.');
+      return true;
+    } catch (e) { return false; }
+  }
 
   /* ---------------- 등록부 (양식) ---------------- */
   var PER_TABLE = 38;
@@ -3248,7 +3270,7 @@ var qrcode = function() {
         var bits = ['- 일시: ' + fmt.dateDots(session.date) + (session.start ? ' ' + session.start + (session.end ? '~' + session.end : '') : '')];
         if (session.place) bits.push('장소: ' + session.place);
         if (session.hours) bits.push('이수시간: ' + fmt.hours(session.hours));
-        info = '<div class="f-info">' + esc(bits.join('   ')) + '</div>';
+        info = '<div class="f-info">' + esc(bits.join('    ')) + '</div>';
       }
       out += '<section class="a4"><div class="f">' +
         '<div class="f-date"><span>' + esc(fmt.dateDots(session.date)) + '</span><span>' + (pages > 1 ? (pg + 1) + ' / ' + pages : '') + '</span></div>' +
@@ -3288,7 +3310,7 @@ var qrcode = function() {
         size -= 0.5;
         el.style.fontSize = size + 'px';
       }
-      if (el.scrollWidth > el.clientWidth + 1) el.style.whiteSpace = 'normal';
+      if (el.scrollWidth > el.clientWidth + 1) el.style.whiteSpace = el.classList.contains('f-info') ? 'pre-wrap' : 'normal';
     });
   }
 
@@ -3321,7 +3343,7 @@ var qrcode = function() {
   /* 체험판 서버 (이 브라우저에만 저장)                                    */
   /* ================================================================ */
   var DemoServer = (function () {
-    var KEY = 'yeonsu-demo-v5';
+    var KEY = 'yeonsu-demo-v6';
     var db = null;
     var DEPTS = ['교장', '교감', '국어', '국어', '국어', '국어', '국어', '국어', '국어', '역사', '역사', '역사', '사회', '사회', '사회',
       '도덕', '도덕', '도덕', '수학', '수학', '수학', '수학', '수학', '수학', '수학', '과학', '과학', '과학', '과학', '과학', '과학',
@@ -3388,7 +3410,7 @@ var qrcode = function() {
       for (var i = 0; i < n; i++) s += chars.charAt(Math.floor(Math.random() * chars.length));
       return s;
     }
-    var DEMO_MASTER = 'demomasterkey00000000001', DEMO_CREATE = 'democreatekey00000000001';
+    var DEMO_MASTER = 'demomasterkey00000000001', DEMO_STAFF = 'demostaffkey000000000001';
 
     function seed() {
       var r = rng(2026);
@@ -3401,16 +3423,17 @@ var qrcode = function() {
       });
       var sigs = staff.map(function (p, i) { return fakeSignature(i + 1); });
       var people = staff.map(function (p) { return { id: p.id, dept: p.dept, name: p.name }; });
+      function owner(i) { return { ownerId: staff[i].id, manager: staff[i].dept + ' ' + staff[i].name }; }
       var now = new Date();
       var later = new Date(now.getTime() + 6 * 86400000);
       var made = nowStr(new Date(now.getTime() - 3 * 86400000));
       var sessions = [
-        { id: 'demo01', key: 'demokeyone000000000000001', title: '2026 교직원 성희롱·성폭력 예방교육', date: ymd(now), start: '15:30', end: '17:00', place: '시청각실',
-          hours: '1.5', manager: '연구부 정다은', docTitle: '전체 교직원 등록부', people: people.slice(), createdAt: made, updatedAt: made },
-        { id: 'demo02', key: 'demokeytwo000000000000002', title: '2026학년도 학교생활기록부 교육청 점검 사항', date: '2026-08-24', start: '15:00', end: '16:00', place: '2층 회의실',
-          hours: '1', manager: '교무부 서하람', docTitle: '전체 교직원 등록부', people: people.slice(), createdAt: '2026-08-20 10:12:00', updatedAt: '2026-08-20 10:12:00' },
-        { id: 'demo03', key: 'demokeythree0000000000003', title: '학교폭력 사안 처리 절차 안내', date: ymd(later), start: '', end: '', place: '도서실',
-          hours: '1', manager: '생활교육부 오지안', docTitle: '전체 교직원 등록부', people: people.slice(), createdAt: made, updatedAt: made }
+        Object.assign({ id: 'demo01', title: '2026 교직원 성희롱·성폭력 예방교육', date: ymd(now), start: '15:30', end: '17:00', place: '시청각실',
+          hours: '1.5', docTitle: '전체 교직원 등록부', people: people.slice(), createdAt: made, updatedAt: made }, owner(54)),
+        Object.assign({ id: 'demo02', title: '2026학년도 학교생활기록부 교육청 점검 사항', date: '2026-08-24', start: '15:00', end: '16:00', place: '2층 회의실',
+          hours: '1', docTitle: '전체 교직원 등록부', people: people.slice(), createdAt: '2026-08-20 10:12:00', updatedAt: '2026-08-20 10:12:00' }, owner(54)),
+        Object.assign({ id: 'demo03', title: '학교폭력 사안 처리 절차 안내', date: ymd(later), start: '', end: '', place: '도서실',
+          hours: '1', docTitle: '전체 교직원 등록부', people: people.slice(), createdAt: made, updatedAt: made }, owner(15))
       ];
       var records = [];
       var order = people.map(function (p, i) { return i; }).sort(function () { return r() - 0.5; });
@@ -3426,13 +3449,13 @@ var qrcode = function() {
         if (notes[i]) records.push({ sid: 'demo02', pid: p.id, name: p.name, dept: p.dept, signed: false, method: '', note: notes[i], sig: '' });
         else records.push({ sid: 'demo02', pid: p.id, name: p.name, dept: p.dept, signed: true, method: 'QR', note: '', sig: sigs[i] });
       });
-      return { v: 5, master: DEMO_MASTER, create: DEMO_CREATE, site: '', staff: staff, sessions: sessions, records: records };
+      return { v: 6, master: DEMO_MASTER, staffKey: DEMO_STAFF, staff: staff, sessions: sessions, records: records };
     }
 
     function load() {
       if (db) return db;
       db = store.getJSON(KEY, null);
-      if (!db || db.v !== 5) { db = seed(); save(); }
+      if (!db || db.v !== 6) { db = seed(); save(); }
       return db;
     }
     function save() { store.setJSON(KEY, db); }
@@ -3441,11 +3464,9 @@ var qrcode = function() {
 
     function matches(given, real) { return String(real || '').length >= 16 && String(given || '') === String(real); }
     function isMaster(q) { return matches(q.master, load().master); }
-    function canCreate(q) { return isMaster(q) || matches(q.create, load().create); }
-    function canManage(q, s) { return isMaster(q) || matches(q.key, s.key); }
-    function needMaster(q) { if (!isMaster(q)) fail('총괄 링크로 열어야 하는 기능입니다. 총괄 링크가 바뀌었다면 새 링크로 열어 주세요.', 'AUTH_MASTER'); }
-    function needCreate(q) { if (!canCreate(q)) fail('연수 만들기 링크가 바뀌었거나 잘못되었습니다. 메신저 공지의 새 링크로 열어 주세요.', 'AUTH_CREATE'); }
-    function needManage(q, s) { if (!canManage(q, s)) fail('이 연수의 관리 링크가 아닙니다. 연수를 만든 선생님께 관리 링크를 받아 주세요.', 'AUTH_MANAGE'); }
+    function isStaff(q) { return isMaster(q) || matches(q.staff, load().staffKey); }
+    function needMaster(q) { if (!isMaster(q)) fail('총괄 바로가기로 열어야 하는 기능입니다. 총괄 열쇠가 바뀌었다면 새 바로가기로 열어 주세요.', 'AUTH_MASTER'); }
+    function needStaff(q) { if (!isStaff(q)) fail('담당자 바로가기가 바뀌었거나 잘못되었습니다. 교직원 메신저 공지의 새 바로가기로 열어 주세요.', 'AUTH_STAFF'); }
 
     function find(sid) {
       var s = load().sessions.filter(function (x) { return x.id === sid; })[0];
@@ -3459,11 +3480,16 @@ var qrcode = function() {
     }
     function rec(sid, pid) { return load().records.filter(function (r) { return r.sid === sid && r.pid === pid; })[0] || null; }
     function pubInfo(s) { return { id: s.id, title: s.title, date: s.date, start: s.start, end: s.end, place: s.place, docTitle: s.docTitle }; }
-    function admInfo(s, withKey) {
-      var o = { id: s.id, title: s.title, date: s.date, start: s.start, end: s.end, place: s.place, hours: s.hours, manager: s.manager,
-        docTitle: s.docTitle, createdAt: s.createdAt, updatedAt: s.updatedAt, total: s.people.length };
-      if (withKey) o.key = s.key;
-      return o;
+    function admInfo(s) {
+      return { id: s.id, title: s.title, date: s.date, start: s.start, end: s.end, place: s.place, hours: s.hours, manager: s.manager,
+        ownerId: s.ownerId, docTitle: s.docTitle, createdAt: s.createdAt, updatedAt: s.updatedAt, total: s.people.length };
+    }
+    function detail(s) {
+      var info = admInfo(s);
+      info.people = s.people.map(function (p, i) { return { id: p.id, no: i + 1, dept: p.dept, name: p.name, extra: !!p.extra }; });
+      info.records = load().records.filter(function (r) { return r.sid === s.id; })
+        .map(function (r) { return { pid: r.pid, signed: r.signed, method: r.method, note: r.note }; });
+      return info;
     }
     function clean(v, max) { return String(v === null || v === undefined ? '' : v).trim().replace(/^[=+\-@]+/, '').trim().slice(0, max || 200); }
     function validInput(x) {
@@ -3473,8 +3499,9 @@ var qrcode = function() {
       var start = /^\d{2}:\d{2}$/.test(x.start || '') ? x.start : '', end = /^\d{2}:\d{2}$/.test(x.end || '') ? x.end : '';
       if (start && end && end <= start) fail('끝나는 시각이 시작 시각보다 늦어야 합니다.', 'BAD_INPUT');
       return { title: title, date: x.date, start: start, end: end, place: clean(x.place, 60), hours: clean(x.hours, 10),
-        manager: clean(x.manager, 40), docTitle: clean(x.docTitle, 60) || '전체 교직원 등록부' };
+        docTitle: clean(x.docTitle, 60) || '전체 교직원 등록부' };
     }
+    function staffById(id) { return load().staff.filter(function (p) { return p.id === String(id || ''); })[0]; }
     function order(people) {
       var pos = {};
       load().staff.forEach(function (p, i) { pos[p.id] = i; });
@@ -3487,7 +3514,7 @@ var qrcode = function() {
     function writeSig(s, pid, sig, method) {
       if (typeof sig !== 'string' || !SIGRE.test(sig)) fail('서명이 비어 있습니다. 서명 칸에 이름을 써 주세요.', 'BAD_INPUT');
       var p = person(s, pid), r = rec(s.id, pid);
-      if (r && r.signed) fail('이미 서명했습니다. 본인이 아니라면 담당자에게 알려 주세요.', 'ALREADY');
+      if (r && r.signed) fail('이미 서명이 등록되어 있습니다. 본인이 하지 않았다면 담당자에게 말씀해 주세요.', 'ALREADY');
       if (r) { r.signed = true; r.method = method; r.sig = sig; }
       else load().records.push({ sid: s.id, pid: p.id, name: p.name, dept: p.dept, signed: true, method: method, note: '', sig: sig });
       save();
@@ -3501,26 +3528,21 @@ var qrcode = function() {
         return { session: pubInfo(s), people: s.people.map(function (p, i) { return { id: p.id, no: i + 1, dept: p.dept, name: p.name, signed: !!signed[p.id] }; }) };
       },
       'public.sign': function (q) { return writeSig(find(q.id), q.pid, q.sig, 'QR'); },
-      'auth.check': function (q) { return { master: isMaster(q), create: canCreate(q), school: CFG.school }; },
+      'auth.check': function (q) { return { master: isMaster(q), staff: isStaff(q), school: CFG.school }; },
       'sessions.list': function (q) {
-        var m = isMaster(q), keys = q.keys || {}, counts = {};
+        needStaff(q);
+        var m = isMaster(q), owner = String(q.owner || ''), counts = {};
+        if (!m && !owner) fail('담당자 이름을 먼저 골라 주세요.', 'BAD_INPUT');
         load().records.forEach(function (r) { if (r.signed) counts[r.sid] = (counts[r.sid] || 0) + 1; });
-        return load().sessions.filter(function (s) { return m || matches(keys[s.id], s.key); })
-          .map(function (s) { var i = admInfo(s, m); i.signed = counts[s.id] || 0; return i; })
+        return load().sessions.filter(function (s) { return !owner || s.ownerId === owner; })
+          .map(function (s) { var i = admInfo(s); i.signed = counts[s.id] || 0; return i; })
           .sort(function (a, b) { return (b.date + (b.start || '')).localeCompare(a.date + (a.start || '')); });
       },
-      'sessions.get': function (q) {
-        var s = find(q.id); needManage(q, s);
-        var info = admInfo(s, isMaster(q));
-        info.people = s.people.map(function (p, i) { return { id: p.id, no: i + 1, dept: p.dept, name: p.name, extra: !!p.extra }; });
-        info.records = load().records.filter(function (r) { return r.sid === s.id; })
-          .map(function (r) { return { pid: r.pid, signed: r.signed, method: r.method, note: r.note }; });
-        info.canCreate = canCreate(q);
-        return info;
-      },
+      'sessions.get': function (q) { needStaff(q); return detail(find(q.id)); },
       'sessions.create': function (q) {
-        needCreate(q);
-        var inp = validInput(q.session || {}), byId = {}, people;
+        needStaff(q);
+        var inp = validInput(q.session || {}), own = staffById(q.session.ownerId), byId = {}, people;
+        if (!own) fail('담당자를 골라 주세요.', 'BAD_INPUT');
         load().staff.forEach(function (p) { byId[p.id] = p; });
         if (Array.isArray(q.session.people) && q.session.people.length) {
           var seen = {};
@@ -3531,23 +3553,29 @@ var qrcode = function() {
         var ids = {};
         load().sessions.forEach(function (x) { ids[x.id] = 1; });
         var id; do { id = rand(6); } while (ids[id]);
-        var s = Object.assign({ id: id, key: rand(24), people: people, createdAt: nowStr(), updatedAt: nowStr() }, inp);
+        var s = Object.assign({ id: id, people: people, createdAt: nowStr(), updatedAt: nowStr(), ownerId: own.id, manager: own.dept + ' ' + own.name }, inp);
         load().sessions.push(s); save();
-        var info = admInfo(s, true); info.signed = 0; return info;
+        var info = admInfo(s); info.signed = 0; return info;
       },
       'sessions.update': function (q) {
-        var inp = validInput(q.session || {}), s = find(q.id); needManage(q, s);
-        Object.assign(s, inp, { updatedAt: nowStr() }); save();
-        return admInfo(s, isMaster(q));
+        needStaff(q);
+        var inp = validInput(q.session || {}), s = find(q.id);
+        Object.assign(s, inp, { updatedAt: nowStr() });
+        if (q.session.ownerId && q.session.ownerId !== s.ownerId) {
+          var own = staffById(q.session.ownerId);
+          if (!own) fail('담당자를 다시 골라 주세요.', 'BAD_INPUT');
+          s.ownerId = own.id; s.manager = own.dept + ' ' + own.name;
+        }
+        save(); return admInfo(s);
       },
       'sessions.delete': function (q) {
-        var s = find(q.id); needManage(q, s);
+        needStaff(q); var s = find(q.id);
         db.sessions = db.sessions.filter(function (x) { return x !== s; });
         db.records = db.records.filter(function (r) { return r.sid !== s.id; });
         save(); return { id: s.id };
       },
       'people.add': function (q) {
-        var s = find(q.id); needManage(q, s);
+        needStaff(q); var s = find(q.id);
         var inList = {}, byId = {}, added = [];
         s.people.forEach(function (p) { inList[p.id] = 1; });
         load().staff.forEach(function (p) { byId[p.id] = p; });
@@ -3558,60 +3586,51 @@ var qrcode = function() {
         }
         if (!added.length) fail('추가할 사람을 골라 주세요.', 'BAD_INPUT');
         s.people = order(s.people); save();
-        return { added: added };
+        var d = detail(s); d.added = added; return d;
       },
       'people.remove': function (q) {
-        var s = find(q.id); needManage(q, s);
-        var p = person(s, q.pid);
+        needStaff(q); var s = find(q.id), p = person(s, q.pid);
         s.people = s.people.filter(function (x) { return x !== p; });
         db.records = db.records.filter(function (r) { return !(r.sid === s.id && r.pid === p.id); });
-        save(); return { pid: p.id };
+        save(); return detail(s);
       },
       'people.edit': function (q) {
-        var s = find(q.id); needManage(q, s);
-        var p = person(s, q.pid), name = clean(q.name, 30);
+        needStaff(q); var s = find(q.id), p = person(s, q.pid), name = clean(q.name, 30);
         if (!name) fail('성명을 입력해 주세요.', 'BAD_INPUT');
-        if (!p.extra) fail('학교 명단에 있는 선생님은 여기서 고칠 수 없습니다.', 'BAD_INPUT');
         p.name = name; p.dept = clean(q.dept, 30);
         var r = rec(s.id, p.id); if (r) { r.name = p.name; r.dept = p.dept; }
-        save(); return { pid: p.id, name: p.name, dept: p.dept };
+        save(); return detail(s);
       },
       'sig.images': function (q) {
-        var s = find(q.id); needManage(q, s);
-        var want = q.pids ? {} : null, map = {};
+        needStaff(q); var s = find(q.id), want = q.pids ? {} : null, map = {};
         if (want) q.pids.forEach(function (p) { want[p] = 1; });
         load().records.forEach(function (r) { if (r.sid === s.id && r.signed && r.sig && (!want || want[r.pid])) map[r.pid] = r.sig; });
         return map;
       },
-      'sig.adminSign': function (q) { var s = find(q.id); needManage(q, s); return writeSig(s, q.pid, q.sig, '현장'); },
+      'sig.adminSign': function (q) { needStaff(q); var s = find(q.id); writeSig(s, q.pid, q.sig, '현장'); return detail(s); },
       'sig.delete': function (q) {
-        var s = find(q.id); needManage(q, s);
-        var r = rec(s.id, q.pid);
+        needStaff(q); var s = find(q.id), r = rec(s.id, q.pid);
         if (!r || !r.signed) fail('지울 서명이 없습니다.', 'NOT_FOUND');
-        r.signed = false; r.method = ''; r.sig = ''; save(); return { pid: q.pid };
+        r.signed = false; r.method = ''; r.sig = ''; save(); return detail(s);
       },
       'sig.note': function (q) {
-        var s = find(q.id); needManage(q, s);
-        var p = person(s, q.pid), r = rec(s.id, q.pid), note = clean(q.note, 40);
+        needStaff(q); var s = find(q.id), p = person(s, q.pid), r = rec(s.id, q.pid), note = clean(q.note, 40);
         if (r) r.note = note;
         else if (note) load().records.push({ sid: s.id, pid: p.id, name: p.name, dept: p.dept, signed: false, method: '', note: note, sig: '' });
-        save(); return { pid: q.pid, note: note };
+        save(); return detail(s);
       },
-      'staff.list': function (q) {
-        if (!canCreate(q)) { var s = q.id ? find(q.id) : null; if (!s || !canManage(q, s)) fail('명단을 볼 수 있는 링크가 아닙니다.', 'AUTH_MANAGE'); }
-        return load().staff;
-      },
+      'staff.list': function (q) { needStaff(q); return load().staff; },
       'staff.save': function (q) {
         needMaster(q);
         db.staff = (q.list || []).filter(function (p) { return clean(p.name, 30); })
           .map(function (p) { return { id: p.id || 'p' + rand(8), dept: clean(p.dept, 30), name: clean(p.name, 30), active: p.active !== false }; });
         save(); return db.staff;
       },
-      'links.get': function (q) { needMaster(q); if (/^https?:\/\//.test(q.site || '')) { db.site = q.site; save(); } return { master: db.master, create: db.create }; },
+      'links.get': function (q) { needMaster(q); return { master: db.master, staff: db.staffKey }; },
       'links.rotate': function (q) {
         needMaster(q);
-        if (q.which === 'master') db.master = rand(24); else if (q.which === 'create') db.create = rand(24); else fail('알 수 없는 링크입니다.', 'BAD_INPUT');
-        save(); return { master: db.master, create: db.create };
+        if (q.which === 'master') db.master = rand(24); else if (q.which === 'staff') db.staffKey = rand(24); else fail('알 수 없는 링크입니다.', 'BAD_INPUT');
+        save(); return { master: db.master, staff: db.staffKey };
       }
     };
 
@@ -3622,28 +3641,22 @@ var qrcode = function() {
         return fn(req);
       },
       reset: function () { db = seed(); save(); },
-      keys: function () { var d = load(); return { master: d.master, create: d.create }; }
+      keys: function () { var d = load(); return { master: d.master, staff: d.staffKey }; }
     };
   })();
 
   /* ---------------- 공통 화면 조각 ---------------- */
   function demoBar(active) {
     if (!DEMO) return '';
+    var k = DemoServer.keys();
     return '<div class="demo-bar" role="note"><span><strong>체험판</strong>입니다. 입력한 내용은 이 브라우저에만 저장됩니다.</span>' +
       '<nav aria-label="체험판 화면 전환">' +
       '<a href="#s-demo01"' + (active === 'teacher' ? ' aria-current="page"' : '') + '>교사 화면</a>' +
-      '<a href="#admin"' + (active === 'admin' ? ' aria-current="page"' : '') + '>담당자 화면</a>' +
+      '<a href="#staff-' + esc(k.staff) + '"' + (active === 'staff' ? ' aria-current="page"' : '') + '>담당자 바로가기</a>' +
+      '<a href="#master-' + esc(k.master) + '"' + (active === 'master' ? ' aria-current="page"' : '') + '>총괄 바로가기</a>' +
       '<button type="button" data-demo-reset>처음 상태로 되돌리기</button></nav></div>';
   }
   function credit() { return '<footer class="credit">© 2026 김포한가람중학교 · 제작 JHK</footer>'; }
-
-  // 체험판은 총괄과 연수 만들기 권한을 자동으로 갖고 시작합니다.
-  function demoGrant() {
-    if (!DEMO) return;
-    var k = DemoServer.keys();
-    if (Auth.master() !== k.master) Auth.setMaster(k.master);
-    if (Auth.create() !== k.create) Auth.setCreate(k.create);
-  }
 
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-demo-reset]');
@@ -3652,20 +3665,17 @@ var qrcode = function() {
       .then(function (ok) {
         if (!ok) return;
         DemoServer.reset();
-        store.del('yeonsu-auth');
-        Object.keys(mem).forEach(function (k) { if (k.indexOf('yeonsu-done-') === 0) delete mem[k]; });
-        try { Object.keys(global.localStorage).forEach(function (k) { if (k.indexOf('yeonsu-done-') === 0) global.localStorage.removeItem(k); }); } catch (err) { /* ignore */ }
-        demoGrant();
+        Auth.clear();
         toast('체험판을 처음 상태로 되돌렸습니다.');
-        global.dispatchEvent(new HashChangeEvent('hashchange'));
+        location.hash = '#s-demo01';
       });
   });
 
   global.YS = {
     CFG: CFG, DEMO: DEMO, store: store, esc: esc, sleep: sleep, fmt: fmt, ymd: ymd, hm: hm, parseYmd: parseYmd,
     matchPerson: matchPerson, toast: toast, modal: modal, confirmBox: confirmBox, Api: Api, ApiError: ApiError, Auth: Auth,
-    createPad: createPad, qrSvg: qrSvg, signUrl: signUrl, siteBase: siteBase, manageUrl: manageUrl, createUrl: createUrl, masterUrl: masterUrl,
-    demoGrant: demoGrant,
+    createPad: createPad, qrSvg: qrSvg, signUrl: signUrl, siteBase: siteBase, staffUrl: staffUrl, masterUrl: masterUrl,
+    downloadShortcut: downloadShortcut, shortcutHtml: shortcutHtml,
     rosterPages: rosterPages, fitRoster: fitRoster, printHtml: printHtml, copyText: copyText, inFrame: inFrame,
     demoBar: demoBar, credit: credit, DemoServer: DemoServer
   };
@@ -3682,8 +3692,8 @@ var qrcode = function() {
     app = rootEl;
     document.body.className = 'is-teacher';
     document.title = '연수 서명 | ' + Y.CFG.school;
-    st = { id: null, data: null, query: '', person: null, pad: null, skipDone: false, step: 'pick' };
-    var m = hash.match(/^s-([a-z0-9]+)$/i);
+    st = { id: null, data: null, query: '', person: null, pad: null, step: 'pick', pushed: false };
+    var m = hash.match(/^s-([a-z0-9]+)(?:-d)?$/i);   // -d: 완료 화면 표시(아래 showDone 참고)
     if (m) openSession(m[1]);
     else landing();
   }
@@ -3695,15 +3705,15 @@ var qrcode = function() {
 
   function head(s) {
     return '<header class="t-head"><p class="t-school">' + esc(Y.CFG.school) + ' 연수 서명</p>' +
-      (s ? '<h1 class="t-title doc">' + esc(s.title) + '</h1><p class="t-meta num">' + esc(fmt.dateK(s.date)) + ' ' + esc(s.start) +
-        (s.place ? ', ' + esc(s.place) : '') + '</p>' : '') + '</header>';
+      (s ? '<h1 class="t-title doc">' + esc(s.title) + '</h1><p class="t-meta num">' + esc(fmt.dateK(s.date)) +
+        (s.start ? ' ' + esc(s.start) : '') + (s.place ? ', ' + esc(s.place) : '') + '</p>' : '') + '</header>';
   }
 
   function loading() {
     frame('<div class="t-head" aria-busy="true"><div class="skel" style="width:140px;height:14px"></div>' +
       '<div class="skel" style="width:80%;height:26px;margin-top:12px"></div><div class="skel" style="width:50%;height:16px;margin-top:10px"></div></div>' +
       '<div class="skel" style="height:52px;margin:12px 0 20px"></div>' +
-      [1, 2, 3, 4, 5].map(function () { return '<div class="skel" style="height:22px;margin:22px 0;width:' + (40 + Math.random() * 40) + '%"></div>'; }).join('') +
+      [62, 48, 70, 55, 66].map(function (w) { return '<div class="skel" style="height:22px;margin:22px 0;width:' + w + '%"></div>'; }).join('') +
       '<p class="sr-only">불러오는 중입니다.</p>');
   }
 
@@ -3714,31 +3724,24 @@ var qrcode = function() {
     if (b) b.addEventListener('click', retry);
   }
 
+  function dropPad() { if (st.pad) { st.pad.destroy(); st.pad = null; } }
+
   /* ---------- 주소만 열었을 때 ---------- */
   function landing() {
     frame(head(null) + '<section class="t-state"><h2>연수 장소에 있는 QR을 찍어 주세요</h2>' +
-      '<p>휴대폰 카메라를 연수 QR에 대면 서명 화면이 열립니다.</p>' +
-      '<p style="margin-top:28px"><a class="btn btn-quiet" href="#admin" style="margin-left:-8px">연수 담당자 화면</a></p></section>');
+      '<p>휴대폰 카메라를 연수 QR에 대면 서명 화면이 열립니다.</p></section>');
   }
 
-  /* ---------- 연수 불러오기 ---------- */
+  /* ---------- 연수 불러오기 (같은 휴대폰으로 다시 찍어도 항상 이름 목록부터) ---------- */
   async function openSession(id) {
     st.id = id;
-    var mine = st.skipDone ? null : Y.store.getJSON('yeonsu-done-' + id, null);
     loading();
     try {
       st.data = await Api.call('public.session', { id: id });
     } catch (e) {
-      if (e.code === 'NOT_FOUND') Y.store.del('yeonsu-done-' + id);
       if (e.code === 'NOT_FOUND') stateScreen('연수를 찾을 수 없습니다', '연수가 지워졌거나 주소가 잘못되었습니다. QR을 다시 찍어 주세요.', null);
       else stateScreen('연수를 불러오지 못했습니다', e.message, null, function () { openSession(id); });
       return;
-    }
-    if (mine) {
-      // 담당자가 서명을 지웠거나 대상에서 뺐다면 이 휴대폰의 기억도 지웁니다.
-      var still = st.data.people.filter(function (p) { return p.id === mine.pid && p.signed; })[0];
-      if (still) { showDone(mine, false); return; }
-      Y.store.del('yeonsu-done-' + id);
     }
     showPick();
   }
@@ -3767,12 +3770,21 @@ var qrcode = function() {
       if (!b) return;
       var p = st.data.people.filter(function (x) { return x.id === b.getAttribute('data-pid'); })[0];
       if (!p) return;
-      if (p.signed) { Y.toast('이미 서명했습니다. 본인이 아니라면 담당자에게 알려 주세요.'); return; }
+      if (p.signed) { alreadySigned(); return; }
       st.person = p;
       try { history.pushState({ ys: 'sign' }, ''); st.pushed = true; } catch (err) { st.pushed = false; }
       showSign();
     });
     renderList();
+  }
+
+  function alreadySigned() {
+    Y.modal({
+      sheet: true,
+      title: '이미 서명이 등록되어 있습니다',
+      body: '본인이 하지 않았다면 담당자에게 말씀해 주세요.',
+      actions: [{ label: '확인', kind: 'primary' }]
+    });
   }
 
   function renderList() {
@@ -3785,8 +3797,8 @@ var qrcode = function() {
     var html = '', last = null;
     people.forEach(function (p) {
       if (p.dept !== last) { html += '<div class="t-group" role="presentation">' + esc(p.dept || '기타') + '</div>'; last = p.dept; }
-      html += '<button type="button" role="listitem" class="t-person' + (p.signed ? ' is-done' : '') + '" data-pid="' + esc(p.id) + '"' +
-        (p.signed ? ' aria-disabled="true"' : '') + '><span class="nm">' + esc(p.name) + '</span>' +
+      html += '<button type="button" role="listitem" class="t-person' + (p.signed ? ' is-done' : '') + '" data-pid="' + esc(p.id) + '">' +
+        '<span class="nm">' + esc(p.name) + '</span>' +
         (p.signed ? '<span class="done-label">서명 완료</span>' : '<span class="dp">' + esc(p.dept) + '</span>') + '</button>';
     });
     el.innerHTML = html;
@@ -3803,82 +3815,98 @@ var qrcode = function() {
       '<div id="pad"></div>' +
       '<div class="t-error" role="alert" hidden></div>' +
       '<div class="t-actions"><button type="button" class="btn btn-secondary" data-act="clear">다시 쓰기</button>' +
-      '<button type="button" class="btn btn-primary" data-act="submit" data-busy="등록 중…" aria-disabled="true">서명 등록</button></div>', { noCredit: true });
+      '<button type="button" class="btn btn-primary" data-act="submit" aria-disabled="true">서명 등록</button></div>', { noCredit: true });
     var submit = app.querySelector('[data-act="submit"]');
-    if (st.pad) st.pad.destroy();
+    dropPad();
     st.pad = Y.createPad(app.querySelector('#pad'), function () {
       submit.setAttribute('aria-disabled', String(!st.pad.isEnough()));
       if (st.pad.isEnough()) showError('');
     });
-    app.querySelector('[data-act="back"]').addEventListener('click', function () {
-      if (st.pushed) history.back(); else { if (st.pad) { st.pad.destroy(); st.pad = null; } showPick(); }
-    });
+    app.querySelector('[data-act="back"]').addEventListener('click', backToPick);
     app.querySelector('[data-act="clear"]').addEventListener('click', function () { st.pad.clear(); showError(''); });
-    submit.addEventListener('click', function () { send(submit); });
+    submit.addEventListener('click', function () {
+      if (!st.pad.isEnough()) { showError('서명 칸에 이름을 써 주세요.'); return; }
+      var sig = st.pad.export();
+      if (!sig) { showError('서명을 읽지 못했습니다. [다시 쓰기]를 누르고 한 번 더 써 주세요.'); return; }
+      showError('');
+      confirmSign(sig);
+    });
     global.scrollTo(0, 0);
   }
 
-  function showError(msg, extraHtml) {
+  function backToPick() {
+    dropPad();
+    if (st.pushed) history.back();   // popstate에서 목록을 그립니다
+    else showPick();
+  }
+
+  function showError(msg) {
     var el = app.querySelector('.t-error');
     if (!el) return;
-    el.innerHTML = esc(msg) + (extraHtml || '');
+    el.textContent = msg || '';
     el.hidden = !msg;
   }
 
-  async function send(btn) {
-    if (btn.classList.contains('is-busy')) return;
-    if (!st.pad.isEnough()) { showError('서명 칸에 이름을 써 주세요.'); return; }
-    var sig = st.pad.export();
-    if (!sig) { showError('서명을 읽지 못했습니다. [다시 쓰기]를 누르고 한 번 더 써 주세요.'); return; }
-    btn.classList.add('is-busy');
-    showError('');
-    try {
-      var r = await Api.call('public.sign', { id: st.id, pid: st.person.id, sig: sig });
-      var mine = { id: st.id, pid: r.pid, no: r.no, name: r.name, dept: r.dept, sig: sig,
-        title: st.data.session.title, date: st.data.session.date };
-      Y.store.setJSON('yeonsu-done-' + st.id, mine);
-      if (st.pad) { st.pad.destroy(); st.pad = null; }
-      try { history.replaceState(null, ''); } catch (err) { /* ignore */ }
-      st.pushed = false;
-      showDone(mine, true);
-    } catch (e) {
-      btn.classList.remove('is-busy');
-      if (e.code === 'ALREADY') {
-        showError(e.message, ' <button type="button" class="btn btn-quiet btn-small" data-act="repick">이름 다시 고르기</button>');
-        var rb = app.querySelector('[data-act="repick"]');
-        if (rb) rb.addEventListener('click', function () { st.skipDone = true; if (st.pad) { st.pad.destroy(); st.pad = null; } st.step = 'pick'; openSession(st.id); });
-      } else if (e.code === 'NOT_FOUND' || e.code === 'NOT_IN_LIST') {
-        stateScreen(e.code === 'NOT_FOUND' ? '연수를 찾을 수 없습니다' : '명단에 없는 이름입니다', e.message, st.data.session);
-      } else if (e.code === 'NETWORK' || e.code === 'PARSE') {
-        showError('서명이 등록되지 않았습니다. 인터넷 연결을 확인하고 [서명 등록]을 다시 눌러 주세요.');
-      } else {
-        showError(e.message);
-      }
-    }
+  /* ---------- 등록 확인 (B안) ---------- */
+  function confirmSign(sig) {
+    var p = st.person, result = null, fatal = null, repick = false;
+    st.modal = Y.modal({
+      sheet: true, label: '서명 등록 확인',
+      html: '<p class="cf-lead">아래 이름으로 서명이 등록됩니다</p>' +
+        '<p class="cf-name">' + esc(p.name) + '</p>' +
+        '<p class="cf-sub num">' + (p.dept ? esc(p.dept) + ' · ' : '') + '연번 ' + p.no + '</p>',
+      onClose: function () {
+        st.modal = null;
+        if (result) {
+          dropPad();
+          // 주소 끝에 -d를 붙여 둡니다. 같은 탭에서 같은 QR을 다시 찍어도 주소가 달라서 이름 목록이 새로 열립니다.
+          try { history.replaceState(null, '', '#s-' + st.id + '-d'); } catch (err) { /* ignore */ }
+          st.pushed = false;
+          showDone(result, sig);
+        } else if (fatal) {
+          dropPad();
+          stateScreen(fatal.code === 'NOT_FOUND' ? '연수를 찾을 수 없습니다' : '명단에 없는 이름입니다', fatal.message, st.data.session);
+        } else if (repick) {
+          backToPick();
+        }
+        // 창 바깥을 누르거나 Esc: 서명 화면으로 돌아가 서명을 고칠 수 있습니다.
+      },
+      actions: [
+        { label: '이름 다시 선택', kind: 'secondary', onClick: function () { repick = true; } },
+        {
+          label: '등록', kind: 'primary', busy: '등록 중…', onClick: async function () {
+            try {
+              result = await Api.call('public.sign', { id: st.id, pid: p.id, sig: sig });
+            } catch (e) {
+              if (e.code === 'NOT_FOUND' || e.code === 'NOT_IN_LIST') { fatal = e; return; }
+              if (e.code === 'NETWORK' || e.code === 'PARSE') throw new Error('서명이 등록되지 않았습니다. 인터넷 연결을 확인하고 [등록]을 다시 눌러 주세요.');
+              if (e.code === 'ALREADY') p.signed = true;   // 목록으로 돌아가면 ‘서명 완료’로 보이게
+              throw e;   // 이미 서명됨 등: 창 안에 안내, [이름 다시 선택] 가능
+            }
+          }
+        }
+      ]
+    });
   }
 
   /* ---------- 완료 ---------- */
-  function showDone(m, animate) {
+  function showDone(r, sig) {
     st.step = 'done';
-    frame('<section class="t-done"><h1 tabindex="-1">서명이 등록되었습니다</h1>' +
-      '<table class="form-row" aria-label="등록부에 들어간 내 서명"><thead><tr><th style="width:16%">연번</th><th style="width:24%">교과/업무</th><th style="width:24%">성명</th><th>서명</th></tr></thead>' +
-      '<tbody><tr><td class="num">' + esc(m.no) + '</td><td>' + esc(m.dept) + '</td><td>' + esc(m.name) + '</td>' +
-      '<td class="sig-cell"><img class="' + (animate ? 'settle' : '') + '" alt="' + esc(m.name) + ' 서명" src="' + esc(m.sig) + '"></td></tr></tbody></table>' +
-      '<div class="about"><p class="doc" style="color:var(--ink);margin:0">' + esc(m.title) + '</p><p>이 화면은 닫아도 됩니다.</p></div>' +
-      '<button type="button" class="btn btn-quiet again" data-act="again">다른 선생님 서명하기</button></section>');
+    frame('<section class="t-done"><h1 tabindex="-1"><b>' + esc(r.name) + '</b> 선생님의 서명이 등록되었습니다.</h1>' +
+      '<table class="form-row" aria-label="등록부에 들어간 서명"><thead><tr><th style="width:16%">연번</th><th style="width:24%">교과/업무</th><th style="width:24%">성명</th><th>서명</th></tr></thead>' +
+      '<tbody><tr><td class="num">' + esc(r.no) + '</td><td>' + esc(r.dept) + '</td><td>' + esc(r.name) + '</td>' +
+      '<td class="sig-cell"><img class="settle" alt="' + esc(r.name) + ' 서명" src="' + esc(sig) + '"></td></tr></tbody></table>' +
+      '<div class="about"><p class="doc" style="color:var(--ink);margin:0">' + esc(st.data.session.title) + '</p><p>이 화면은 닫아도 됩니다.</p></div></section>');
     var h = app.querySelector('h1');
     if (h) h.focus({ preventScroll: true });
-    app.querySelector('[data-act="again"]').addEventListener('click', function () {
-      st.skipDone = true;
-      st.query = '';
-      openSession(m.id);
-    });
   }
 
   global.addEventListener('popstate', function () {
     if (!st || !app || document.body.className !== 'is-teacher') return;
     if (st.step === 'sign') {
-      if (st.pad) { st.pad.destroy(); st.pad = null; }
+      if (st.modal) st.modal.close();
+      dropPad();
+      st.pushed = false;
       showPick();
     }
   });
@@ -3886,60 +3914,54 @@ var qrcode = function() {
   global.Teacher = { mount: mount };
 })(window);
 
-/* 담당자·총괄 화면 — © 2026 김포한가람중학교 · 제작 JHK */
+/* 담당자·총괄 화면 v3 — © 2026 김포한가람중학교 · 제작 JHK */
 (function (global) {
   'use strict';
   var Y = global.YS, esc = Y.esc, fmt = Y.fmt, Api = Y.Api, Auth = Y.Auth;
-  var app, A = { timer: null, imgs: {}, notice: null, created: null, route: '' };
+  var app, A = { timer: null, imgs: {}, created: null, route: '', pending: 0, ver: 0, staffList: null, chain: Promise.resolve() };
   var NOTE_CHOICES = ['출장', '병가', '연가', '공가', '수업', '기타'];
 
   /* ================================================================ */
-  /* 링크로 들어오기: #master-열쇠, #new-열쇠, #m-연수-열쇠                  */
+  /* 바로가기로 들어오기: #staff-열쇠 (#new-열쇠: 예전 링크), #master-열쇠     */
   /* ================================================================ */
   async function enter(rootEl, hash) {
     app = rootEl;
     document.body.className = 'is-admin';
     stop();
-    simple('<p class="a-sub" aria-busy="true">링크를 확인하고 있습니다…</p>');
+    if (/^m-/.test(hash)) {
+      simple('<h1 class="a-h1 doc">이 링크는 더 이상 쓰지 않습니다</h1><p class="a-sub">교직원 메신저 공지의 <b>연수 담당자 바로가기</b>로 들어와 이름을 고르면, 내가 연 연수가 모두 보입니다.</p>');
+      return;
+    }
+    simple('<p class="a-sub" aria-busy="true">바로가기를 확인하고 있습니다…</p>');
     var m, kind = '';
     try {
       if ((m = hash.match(/^master-([a-z0-9]+)$/))) {
         kind = 'master';
-        var r1 = await Api.call('auth.check', { master: m[1], create: '' });
+        var r1 = await Api.call('auth.check', { master: m[1], staff: '' });
         if (!r1.master) throw new Y.ApiError('', 'BAD_LINK');
-        Auth.setMaster(m[1]);
-        A.notice = { kind: 'master', route: 'admin' };
+        Auth.set('master', m[1]);
+        Auth.set('staff', '');
         location.replace('#admin');
-      } else if ((m = hash.match(/^new-([a-z0-9]+)$/))) {
-        kind = 'create';
-        var r2 = await Api.call('auth.check', { master: '', create: m[1] });
-        if (!r2.create) throw new Y.ApiError('', 'BAD_LINK');
-        Auth.setCreate(m[1]);
-        A.notice = { kind: 'create', route: 'admin-new' };
-        location.replace('#admin-new');
-      } else if ((m = hash.match(/^m-([a-z0-9]+)-([a-z0-9]+)$/))) {
-        kind = 'session';
-        await Api.call('sessions.get', { id: m[1], key: m[2], master: '' });
-        Auth.setSession(m[1], m[2]);
-        A.notice = { kind: 'session', sid: m[1], route: 'admin-s-' + m[1] };
-        location.replace('#admin-s-' + m[1]);
+      } else if ((m = hash.match(/^(?:staff|new)-([a-z0-9]+)$/))) {
+        kind = 'staff';
+        var r2 = await Api.call('auth.check', { master: '', staff: m[1] });
+        if (!r2.staff) throw new Y.ApiError('', 'BAD_LINK');
+        Auth.set('staff', m[1]);
+        Auth.set('master', '');
+        location.replace('#admin');
       } else {
         location.replace('#admin');
       }
     } catch (e) {
       if (e.code === 'NETWORK' || e.code === 'PARSE') {
-        simple('<h1 class="a-h1 doc">링크를 확인하지 못했습니다</h1><p class="a-sub">' + esc(e.message) + '</p>' +
+        simple('<h1 class="a-h1 doc">바로가기를 확인하지 못했습니다</h1><p class="a-sub">' + esc(e.message) + '</p>' +
           '<p style="margin-top:18px"><button type="button" class="btn btn-secondary" data-act="retry">다시 시도</button></p>');
         app.querySelector('[data-act="retry"]').addEventListener('click', function () { enter(rootEl, hash); });
         return;
       }
-      var help = {
-        master: '총괄 링크가 바뀌었을 수 있습니다. 구글 시트의 ‘설정’ 시트에서 지금 총괄 링크를 확인해 주세요.',
-        create: '연수 만들기 링크가 새 링크로 바뀌었을 수 있습니다. 업무 메신저 공지에 있는 최신 링크로 다시 열어 주세요.',
-        session: '연수가 지워졌거나 링크가 잘못되었습니다. 연수를 만든 선생님께 관리 링크를 다시 받아 주세요.'
-      }[kind] || '';
-      simple('<h1 class="a-h1 doc">열 수 없는 링크입니다</h1><p class="a-sub">' + esc(help) + '</p>' +
-        '<p style="margin-top:18px"><a class="btn btn-secondary" href="#admin">담당자 화면으로</a></p>');
+      simple('<h1 class="a-h1 doc">열 수 없는 바로가기입니다</h1><p class="a-sub">' + (kind === 'master'
+        ? '총괄 열쇠가 바뀌었을 수 있습니다. 구글 시트의 ‘설정’ 시트에서 지금 총괄 링크를 확인해 주세요.'
+        : '담당자 열쇠가 새로 바뀌었을 수 있습니다. 교직원 메신저 공지의 최신 바로가기로 다시 열어 주세요.') + '</p>');
     }
   }
 
@@ -3952,41 +3974,41 @@ var qrcode = function() {
     document.title = '담당자 화면 | ' + Y.CFG.school + ' 연수 서명';
     stop();
     A.route = hash;
-    if (A.notice && A.notice.route !== hash) A.notice = null;
-    if (A.created && 'admin-s-' + A.created.id !== hash) A.created = null;
-    Y.demoGrant();
-    Auth.touch();
+    if (A.created && 'admin-s-' + A.created !== hash) A.created = null;
+    if (Y.DEMO && !Auth.master() && !Auth.staff()) Auth.set('master', Y.DemoServer.keys().master);
+    if (hash === 'admin-masterkey') return showMasterKey();
+    if (!Auth.master() && !Auth.staff()) return showNoAccess();
     var m;
-    if (hash === 'admin') return showHome();
-    if (hash === 'admin-new') return showEditor(null, false);
+    if (hash === 'admin-who') return showWho();
+    if (hash === 'admin') return isMaster() || Auth.me() ? showHome() : showWho();
+    if (hash === 'admin-new') return isMaster() || Auth.me() ? showEditor(null, false) : showWho();
     if ((m = hash.match(/^admin-edit-(\w+)$/))) return showEditor(m[1], false);
     if ((m = hash.match(/^admin-copy-(\w+)$/))) return showEditor(m[1], true);
     if ((m = hash.match(/^admin-s-(\w+)$/))) return showBoard(m[1]);
     if ((m = hash.match(/^admin-roster-(\w+)$/))) return showRoster(m[1]);
     if (hash === 'admin-staff') return showStaff();
     if (hash === 'admin-links') return showLinks();
-    if (hash === 'admin-masterkey') return showMasterKey();
     location.replace('#admin');
   }
 
   function isMaster() { return !!Auth.master(); }
-  function canCreate() { return !!(Auth.master() || Auth.create()); }
+  function meText(p) { return (p.dept ? p.dept + ' ' : '') + p.name; }
 
   function frame(inner, nav) {
-    var master = isMaster();
+    var master = isMaster(), me = Auth.me();
     function link(href, label, key) { return '<a href="' + href + '"' + (nav === key ? ' aria-current="page"' : '') + '>' + label + '</a>'; }
-    app.innerHTML = Y.demoBar('admin') +
+    app.innerHTML = Y.demoBar(master ? 'master' : 'staff') +
       '<header class="a-top"><a class="a-brand" href="#admin">' + esc(Y.CFG.school) + '<span>연수 서명</span></a>' +
       '<nav class="a-nav" aria-label="담당자 메뉴">' +
       (master ? link('#admin', '모든 연수', 'list') + link('#admin-staff', '교직원 명단', 'staff') + link('#admin-links', '링크 관리', 'links')
-              : link('#admin', '내 연수', 'list')) +
-      '</nav></header><main class="a-main">' + noticeHtml() + inner + '</main>' + Y.credit();
-    bindNotice();
+              : link('#admin', '내 연수', 'list') +
+                (me ? '<span class="a-me"><b>' + esc(meText(me)) + '</b> 선생님<a href="#admin-who">이름 바꾸기</a></span>' : '')) +
+      '</nav></header><main class="a-main">' + inner + '</main>' + Y.credit();
   }
 
   function simple(inner) {
-    app.innerHTML = Y.demoBar('admin') + '<header class="a-top"><a class="a-brand" href="#admin">' + esc(Y.CFG.school) +
-      '<span>연수 서명</span></a></header><main class="a-main"><div class="sheet sheet-pad" style="max-width:620px">' + inner + '</div></main>' + Y.credit();
+    app.innerHTML = Y.demoBar('staff') + '<header class="a-top"><a class="a-brand" href="#admin">' + esc(Y.CFG.school) +
+      '<span>연수 서명</span></a></header><main class="a-main"><div class="sheet sheet-pad" style="max-width:640px">' + inner + '</div></main>' + Y.credit();
   }
 
   function loadingFrame(nav) {
@@ -4003,11 +4025,13 @@ var qrcode = function() {
 
   function authFrame(e) {
     stop();
-    if (e.code === 'AUTH_MASTER') Auth.drop('master');
-    if (e.code === 'AUTH_CREATE') Auth.drop('create');
-    var m = A.route.match(/^admin-(?:s|roster|edit|copy)-(\w+)$/);
-    if (e.code === 'AUTH_MANAGE' && m && !isMaster()) Auth.drop('session', m[1]);
-    frame('<div class="sheet sheet-pad" style="max-width:620px"><h1 class="sheet-title">이 화면을 열 수 없습니다</h1><p class="a-sub">' + esc(e.message) + '</p>' +
+    if (e.code === 'AUTH_STAFF') { Auth.set('staff', ''); Auth.set('master', ''); }
+    if (e.code === 'AUTH_MASTER') Auth.set('master', '');
+    if (!Auth.master() && !Auth.staff()) {
+      simple('<h1 class="a-h1 doc">다시 들어와 주세요</h1><p class="a-sub">' + esc(e.message) + '</p>');
+      return;
+    }
+    frame('<div class="sheet sheet-pad" style="max-width:640px"><h1 class="sheet-title">이 화면을 열 수 없습니다</h1><p class="a-sub">' + esc(e.message) + '</p>' +
       '<p style="margin-top:16px"><a class="btn btn-secondary" href="#admin">' + (isMaster() ? '모든 연수' : '내 연수') + '로</a></p></div>', 'list');
   }
 
@@ -4025,32 +4049,52 @@ var qrcode = function() {
     closeRowMenu();
   }
 
-  /* ---------- '이 컴퓨터가 기억합니다' 안내 ---------- */
-  function noticeHtml() {
-    var n = A.notice;
-    if (!n) return '';
-    var text = {
-      master: '이 컴퓨터를 <b>총괄용</b>으로 기억했습니다. 다음부터는 담당자 화면 주소만 열면 됩니다.',
-      create: '이 컴퓨터에 <b>연수 만들기</b> 권한을 기억했습니다. 다음부터는 담당자 화면 주소만 열면 됩니다.',
-      session: '이 컴퓨터가 <b>이 연수</b>를 기억합니다. 다음부터는 담당자 화면 주소만 열면 됩니다.'
-    }[n.kind];
-    return '<div class="notice" role="status"><p>' + text + ' 여러 사람이 쓰는 공용 PC라면 지워 두세요.</p>' +
-      '<button type="button" class="btn btn-secondary btn-small" data-notice="forget">이 컴퓨터에서 지우기</button>' +
-      '<button type="button" class="icon-btn" data-notice="close" aria-label="안내 닫기">×</button></div>';
+  async function staffList(force) {
+    if (!A.staffList || force) A.staffList = await Api.call('staff.list');
+    return A.staffList;
   }
-  function bindNotice() {
-    var box = app.querySelector('.notice');
-    if (!box) return;
-    box.addEventListener('click', function (e) {
-      var b = e.target.closest('[data-notice]');
+
+  /* ================================================================ */
+  /* 들어올 권한이 없을 때                                               */
+  /* ================================================================ */
+  function showNoAccess() {
+    simple('<h1 class="a-h1 doc">담당자 바로가기로 열어 주세요</h1>' +
+      '<p class="a-sub" style="margin-top:8px">교직원 메신저 공지에 있는 <b>연수 담당자 바로가기</b>(파일 또는 링크)로 들어오면, 이름을 골라 내 연수를 보고 새 연수를 만들 수 있습니다.</p>' +
+      '<p style="margin-top:22px"><a class="btn btn-quiet btn-small" href="#admin-masterkey" style="margin-left:-8px">총괄 열쇠로 들어가기</a></p>');
+  }
+
+  /* ================================================================ */
+  /* 이름 고르기                                                        */
+  /* ================================================================ */
+  async function showWho() {
+    loadingFrame('list');
+    var list;
+    try { list = await staffList(); } catch (e) { return errorFrame(e, showWho, 'list'); }
+    var q = '';
+    frame('<div class="who-list"><div class="a-pagehead"><div class="grow"><h1 class="a-h1 doc">이름을 선택하세요</h1>' +
+      '<p class="a-sub">내가 담당한 연수를 보고, 새 연수를 만들 수 있습니다.</p></div></div>' +
+      '<div class="sheet sheet-pad"><div class="t-search" style="padding-top:0"><label class="sr-only" for="wq">이름 검색</label>' +
+      '<input id="wq" class="input" type="search" autocomplete="off" placeholder="이름 검색 (초성도 됩니다)"></div><div id="wl" role="list"></div></div></div>', 'list');
+    function draw() {
+      var rows = list.filter(function (p) { return Y.matchPerson(q, p); });
+      var html = '', last = null;
+      rows.forEach(function (p) {
+        if (p.dept !== last) { html += '<div class="t-group">' + esc(p.dept || '기타') + '</div>'; last = p.dept; }
+        html += '<button type="button" role="listitem" class="t-person" data-id="' + esc(p.id) + '"><span class="nm">' + esc(p.name) + '</span><span class="dp">' + esc(p.dept) + '</span></button>';
+      });
+      app.querySelector('#wl').innerHTML = html || '<p class="t-empty">맞는 이름이 없습니다. 명단에 이름이 없다면 총괄 담당자에게 말씀해 주세요.</p>';
+    }
+    app.querySelector('#wq').addEventListener('input', function (e) { q = e.target.value; draw(); });
+    app.querySelector('#wl').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-id]');
       if (!b) return;
-      if (b.getAttribute('data-notice') === 'forget') {
-        Auth.forget(A.notice.kind, A.notice.sid);
-        Y.toast('이 컴퓨터에서 지웠습니다. 이 창을 닫으면 다시 링크로 열어야 합니다.');
-      }
-      A.notice = null;
-      box.remove();
+      var p = list.filter(function (x) { return x.id === b.getAttribute('data-id'); })[0];
+      if (!p) return;
+      Auth.set('me', { id: p.id, dept: p.dept, name: p.name });
+      if (location.hash === '#admin') mount(app, 'admin'); else location.hash = '#admin';
     });
+    draw();
+    setTimeout(function () { var i = app.querySelector('#wq'); if (i) i.focus(); }, 30);
   }
 
   /* ================================================================ */
@@ -4058,62 +4102,34 @@ var qrcode = function() {
   /* ================================================================ */
   async function showHome() {
     loadingFrame('list');
-    var list;
-    try {
-      if (Auth.master() || Auth.create()) {
-        var chk = await Api.call('auth.check');
-        if (Auth.master() && !chk.master) { Auth.drop('master'); Y.toast('총괄 링크가 바뀌어서 이 컴퓨터의 총괄 기억을 지웠습니다.'); }
-        if (Auth.create() && !chk.create) { Auth.drop('create'); }
-      }
-      list = await Api.call('sessions.list', { keys: Auth.sessionKeys() });
-    } catch (e) { return errorFrame(e, showHome, 'list'); }
-    var master = isMaster();
-    // 지워진 연수는 이 컴퓨터의 기억에서도 지웁니다.
-    var alive = {};
-    list.forEach(function (s) { alive[s.id] = true; });
-    Object.keys(Auth.sessionKeys()).forEach(function (sid) { if (!alive[sid]) Auth.drop('session', sid); });
-
-    var rows = '', lastMonth = '';
+    var master = isMaster(), me = Auth.me(), list;
+    await A.chain;   // 아직 저장 중인 변경이 있으면 끝난 뒤에 읽습니다
+    try { list = await Api.call('sessions.list', master ? {} : { owner: me.id }); }
+    catch (e) { return errorFrame(e, showHome, 'list'); }
+    var rows = '', lastMonth = '', cols = master ? 5 : 4;
     list.forEach(function (s) {
       var mo = fmt.month(s.date);
-      if (mo !== lastMonth) { rows += '<tr class="ledger-head-month"><td colspan="' + (master ? 5 : 4) + '">' + esc(mo) + '</td></tr>'; lastMonth = mo; }
+      if (mo !== lastMonth) { rows += '<tr class="ledger-head-month"><td colspan="' + cols + '">' + esc(mo) + '</td></tr>'; lastMonth = mo; }
       rows += '<tr class="clickable" data-go="#admin-s-' + esc(s.id) + '">' +
         '<td class="num" style="width:130px">' + esc(fmt.day(s.date)) + (s.start ? ' <span class="muted">' + esc(s.start) + '</span>' : '') + '</td>' +
         '<td><a href="#admin-s-' + esc(s.id) + '" class="row-link">' + esc(s.title) + '</a></td>' +
-        (master ? '<td style="width:180px">' + esc(s.manager) + '</td>' : '') +
+        (master ? '<td style="width:170px">' + (s.manager ? esc(s.manager) : '<span class="muted">정하지 않음</span>') + '</td>' : '') +
         '<td style="width:150px">' + esc(s.place) + '</td>' +
         '<td class="num" style="width:110px">' + s.signed + ' / ' + s.total + '명</td></tr>';
     });
-    var create = canCreate();
     var head = '<div class="a-pagehead"><div class="grow"><h1 class="a-h1 doc">' + (master ? '모든 연수' : '내 연수') + '</h1>' +
-      '<p class="a-sub">' + (master ? '학교의 모든 연수입니다. 연수를 누르면 현황을 볼 수 있습니다.' : '이 컴퓨터에서 만들었거나 관리 링크로 열었던 연수입니다.') + '</p></div>' +
-      (create ? '<div class="a-actions"><a class="btn btn-primary" href="#admin-new">새 연수 만들기</a></div>' : '') + '</div>';
-    var body;
-    if (list.length) {
-      body = '<div class="sheet table-scroll"><table class="ledger"><thead><tr><th>날짜</th><th>연수명</th>' + (master ? '<th>담당자</th>' : '') +
-        '<th>장소</th><th>서명</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
-    } else if (create) {
-      body = '<div class="sheet sheet-pad"><p class="sheet-title">아직 연수가 없습니다</p><p class="a-sub">[새 연수 만들기]를 누르면 연수와 서명용 QR이 함께 만들어집니다.</p></div>';
-    } else {
-      body = '<div class="sheet sheet-pad" style="max-width:680px"><p class="sheet-title">이 컴퓨터에 기억된 연수가 없습니다</p>' +
-        '<p class="a-sub">새 연수는 업무 메신저 공지에 있는 <b>연수 만들기 링크</b>로 만들 수 있습니다. 이미 만든 연수는 그 연수의 <b>관리 링크</b>를 열어 주세요.</p></div>';
-    }
-    var foot = '<div class="home-foot">' +
-      (!master ? '<a class="btn btn-quiet btn-small" href="#admin-masterkey">총괄 열쇠로 들어가기</a>' : '') +
-      (Object.keys(Auth.sessionKeys()).length || Auth.create() || Auth.master() ? '<button type="button" class="btn btn-quiet btn-small" data-act="forget-all">이 컴퓨터의 기억 모두 지우기</button>' : '') + '</div>';
-    frame(head + body + foot, 'list');
+      '<p class="a-sub">' + (master ? '학교의 모든 연수입니다. 연수를 누르면 현황을 볼 수 있습니다.' : esc(meText(me)) + ' 선생님이 담당한 연수입니다.') + '</p></div>' +
+      '<div class="a-actions"><a class="btn btn-primary" href="#admin-new">새 연수 만들기</a></div></div>';
+    var body = list.length
+      ? '<div class="sheet table-scroll"><table class="ledger"><thead><tr><th>날짜</th><th>연수명</th>' + (master ? '<th>담당자</th>' : '') +
+        '<th>장소</th><th>서명</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+      : '<div class="sheet sheet-pad"><p class="sheet-title">아직 연수가 없습니다</p><p class="a-sub">[새 연수 만들기]를 누르면 연수와 서명용 QR이 함께 만들어집니다.</p></div>';
+    frame(head + body, 'list');
     var tb = app.querySelector('tbody');
     if (tb) tb.addEventListener('click', function (e) {
       if (e.target.closest('a')) return;
       var tr = e.target.closest('[data-go]');
       if (tr) location.hash = tr.getAttribute('data-go');
-    });
-    var fa = app.querySelector('[data-act="forget-all"]');
-    if (fa) fa.addEventListener('click', async function () {
-      var ok = await Y.confirmBox({ title: '이 컴퓨터의 기억을 모두 지울까요?', body: '연수는 지워지지 않습니다. 이 컴퓨터에서 다시 열려면 링크가 필요합니다. 공용 PC를 다 쓰고 나서 누르면 됩니다.', ok: '모두 지우기' });
-      if (!ok) return;
-      Auth.forgetAll();
-      Y.toast('이 컴퓨터의 기억을 모두 지웠습니다. 이 창을 닫으면 다시 링크로 열어야 합니다.');
     });
   }
 
@@ -4123,15 +4139,14 @@ var qrcode = function() {
   async function showEditor(id, copy) {
     loadingFrame('list');
     var creating = !id || copy;
-    if (creating && !canCreate()) {
-      return authFrame({ code: 'AUTH_CREATE', message: '새 연수는 업무 메신저 공지에 있는 연수 만들기 링크로 만들 수 있습니다.' });
-    }
-    var staff = null, s = null;
+    var staff, s = null;
+    await A.chain;
     try {
-      if (id) s = await Api.call('sessions.get', { id: id });
-      if (creating) staff = await Api.call('staff.list');
+      var got = await Promise.all([id ? Api.call('sessions.get', { id: id }) : null, staffList(true)]);
+      s = got[0]; staff = got[1];
     } catch (e) { return errorFrame(e, function () { showEditor(id, copy); }, 'list'); }
 
+    var me = Auth.me();
     var pool = creating ? staff.filter(function (p) { return p.active; }) : [];
     var sel = {};
     if (creating) {
@@ -4141,14 +4156,18 @@ var qrcode = function() {
     }
     var allMode = !creating || pool.every(function (p) { return sel[p.id]; });
     var today = Y.ymd(new Date());
+    var ownerId = s && !copy ? s.ownerId : (me ? me.id : (s ? s.ownerId : ''));
+    var ownerKnown = staff.some(function (p) { return p.id === ownerId; });
     var d = {
       title: s ? s.title : '', date: s && !copy ? s.date : today, start: s ? s.start : '', end: s ? s.end : '',
-      place: s ? s.place : '', hours: s ? s.hours : '', manager: s ? s.manager : (Y.store.get('yeonsu-last-manager') || ''),
-      docTitle: s ? s.docTitle : '전체 교직원 등록부'
+      place: s ? s.place : '', hours: s ? s.hours : '', docTitle: s ? s.docTitle : '전체 교직원 등록부'
     };
     var hoursTouched = !!(s && s.hours);
     var heading = !creating ? '연수 수정' : copy ? '같은 내용으로 새 연수' : '새 연수 만들기';
     var backHref = !creating ? '#admin-s-' + esc(id) : '#admin';
+    var ownerOptions = (ownerKnown ? '' : '<option value="">담당자를 고르세요</option>') + staff.map(function (p) {
+      return '<option value="' + esc(p.id) + '"' + (p.id === ownerId ? ' selected' : '') + '>' + esc(meText(p)) + '</option>';
+    }).join('');
 
     frame('<a class="a-back" href="' + backHref + '">‹ ' + (!creating ? '연수 현황' : (isMaster() ? '모든 연수' : '내 연수')) + '</a>' +
       '<div class="a-pagehead"><div class="grow"><h1 class="a-h1 doc">' + heading + '</h1>' +
@@ -4160,15 +4179,15 @@ var qrcode = function() {
       field('end', '끝 (선택)', '<input id="f-end" class="input" type="time" value="' + esc(d.end) + '">') + '</div>' +
       '<div class="row-2">' + field('place', '장소 (선택)', '<input id="f-place" class="input" maxlength="60" value="' + esc(d.place) + '" placeholder="예: 시청각실">') +
       field('hours', '이수시간 (선택)', '<div class="inline-num"><input id="f-hours" class="input" inputmode="decimal" value="' + esc(d.hours) + '" style="width:96px"> 시간</div>') + '</div>' +
-      '<div class="row-2">' + field('manager', '담당자 (선택)', '<input id="f-manager" class="input" maxlength="40" value="' + esc(d.manager) + '" placeholder="예: 연구부 홍길동">') +
+      '<div class="row-2">' + field('owner', '담당자', '<select id="f-owner" class="input">' + ownerOptions + '</select>', '이 선생님의 ‘내 연수’에 나옵니다.') +
       field('doctitle', '등록부 제목', '<input id="f-doctitle" class="input" maxlength="60" value="' + esc(d.docTitle) + '">') + '</div>' +
       (creating
         ? '<div class="field"><span class="field-label">대상자</span><div class="radio-line">' +
           '<label><input type="radio" name="who" value="all"' + (allMode ? ' checked' : '') + '> 교직원 명단 전체 (' + pool.length + '명)</label>' +
           '<label><input type="radio" name="who" value="pick"' + (allMode ? '' : ' checked') + '> 직접 고르기</label></div>' +
           '<div id="picker" class="picker"' + (allMode ? ' hidden' : '') + '></div><span class="help" id="who-count"></span>' +
-          '<span class="help">만든 뒤에도 연수 현황 화면에서 대상자를 더하거나 뺄 수 있습니다.</span></div>'
-        : '<p class="help">대상자는 연수 현황 화면의 [대상자 추가]와 각 줄의 [관리]에서 더하거나 뺄 수 있습니다.</p>') +
+          '<span class="help">만든 뒤에도 연수 현황 화면에서 대상자를 더하거나 빼고, 이름을 고칠 수 있습니다.</span></div>'
+        : '<p class="help">대상자는 연수 현황 화면의 [대상자 추가]와 각 줄의 [관리]에서 더하거나 빼고, 이름을 고칠 수 있습니다.</p>') +
       '<p class="form-error" role="alert" hidden></p>' +
       '<div class="form-foot"><button class="btn btn-primary" data-busy="저장하는 중…">' + (creating ? '연수 만들기' : '변경 내용 저장') + '</button>' +
       '<a class="btn btn-quiet" href="' + backHref + '">취소</a></div></form>' +
@@ -4255,23 +4274,23 @@ var qrcode = function() {
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
       var err = form.querySelector('.form-error'), btn = form.querySelector('button.btn-primary');
+      if (btn.classList.contains('is-busy')) return;
       function bad(m, focusId) { err.textContent = m; err.hidden = false; if (focusId) app.querySelector('#f-' + focusId).focus(); }
       err.hidden = true;
       if (!val('title')) return bad('연수명을 입력해 주세요.', 'title');
       if (!val('date')) return bad('날짜를 입력해 주세요.', 'date');
       if (val('start') && val('end') && val('end') <= val('start')) return bad('끝나는 시각이 시작 시각보다 늦어야 합니다.', 'end');
+      if (!val('owner')) return bad('담당자를 골라 주세요.', 'owner');
       var ps = picked();
       if (creating && !ps.length) return bad('대상자를 한 명 이상 골라 주세요.');
       var body = { title: val('title'), date: val('date'), start: val('start'), end: val('end'), place: val('place'),
-        hours: val('hours'), manager: val('manager'), docTitle: val('doctitle') };
+        hours: val('hours'), docTitle: val('doctitle'), ownerId: val('owner') };
       btn.classList.add('is-busy');
       try {
         if (creating) {
-          body.people = ps.map(function (p) { return p.id; });
+          body.people = app.querySelector('input[name="who"]:checked').value === 'all' ? [] : ps.map(function (p) { return p.id; });
           var r = await Api.call('sessions.create', { session: body });
-          Auth.setSession(r.id, r.key);
-          A.created = { id: r.id, key: r.key };
-          if (body.manager) Y.store.set('yeonsu-last-manager', body.manager);
+          A.created = r.id;
           location.hash = '#admin-s-' + r.id;
         } else {
           await Api.call('sessions.update', { id: id, session: body });
@@ -4295,23 +4314,24 @@ var qrcode = function() {
   /* ================================================================ */
   async function showBoard(id) {
     loadingFrame('list');
+    await A.chain;
     A.board = { id: id, filter: 'all', query: '', fresh: {} };
     try {
-      A.board.s = await Api.call('sessions.get', { id: id });
-      A.imgs[id] = A.imgs[id] || {};
-      await loadImages(id, A.board.s);
+      // 연수 내용과 서명 그림을 한꺼번에 받습니다. (두 번 기다리지 않게)
+      var got = await Promise.all([Api.call('sessions.get', { id: id }), Api.call('sig.images', { id: id })]);
+      A.board.s = got[0];
+      A.imgs[id] = got[1] || {};
     } catch (e) { return errorFrame(e, function () { showBoard(id); }, 'list'); }
-    Auth.touch(id);
+    if (location.hash !== '#admin-s-' + id) return;
     renderBoard();
     A.timer = setInterval(pollBoard, Y.DEMO ? 2500 : 6000);
   }
 
   async function loadImages(id, s) {
+    A.imgs[id] = A.imgs[id] || {};
     var need = s.records.filter(function (r) { return r.signed && !A.imgs[id][r.pid]; }).map(function (r) { return r.pid; });
     if (need.length) Object.assign(A.imgs[id], await Api.call('sig.images', { id: id, pids: need }));
   }
-
-  function manageKey(s) { return s.key || Auth.key(s.id); }
 
   function boardModel() {
     var s = A.board.s, recs = {};
@@ -4330,22 +4350,21 @@ var qrcode = function() {
 
   function renderBoard() {
     var s = A.board.s;
-    var created = A.created && A.created.id === s.id;
+    var created = A.created === s.id;
     frame('<a class="a-back" href="#admin">‹ ' + (isMaster() ? '모든 연수' : '내 연수') + '</a>' +
       '<div class="a-pagehead"><div class="grow"><h1 class="a-h1 doc">' + esc(s.title) + '</h1>' +
-      '<div class="a-meta num"><span><b>날짜</b>' + esc(whenText(s)) + '</span>' +
-      (s.place ? '<span><b>장소</b>' + esc(s.place) + '</span>' : '') +
-      (s.hours ? '<span><b>이수</b>' + esc(fmt.hours(s.hours)) + '</span>' : '') +
-      (s.manager ? '<span><b>담당</b>' + esc(s.manager) + '</span>' : '') + '</div></div>' +
+      '<div class="a-meta num" id="meta"></div></div>' +
       '<div class="a-actions"><button type="button" class="btn btn-secondary" data-act="qr-print">QR 인쇄</button>' +
       '<button type="button" class="btn btn-quiet" data-act="qr-show">화면에 QR 띄우기</button>' +
       '<a class="btn btn-primary" href="#admin-roster-' + esc(s.id) + '">등록부 만들기</a>' +
       '<div class="menu-wrap"><button type="button" class="btn btn-secondary" data-act="more" aria-haspopup="menu" aria-expanded="false">더 보기</button>' +
       '<div class="menu" role="menu" hidden><a role="menuitem" href="#admin-edit-' + esc(s.id) + '">연수 수정</a>' +
-      (s.canCreate ? '<a role="menuitem" href="#admin-copy-' + esc(s.id) + '">같은 내용으로 새 연수</a>' : '') +
-      '<button type="button" role="menuitem" data-act="copy-link">관리 링크 복사</button>' +
+      '<a role="menuitem" href="#admin-copy-' + esc(s.id) + '">같은 내용으로 새 연수</a>' +
       '<button type="button" role="menuitem" class="danger" data-act="delete">연수 삭제</button></div></div></div></div>' +
-      (created ? createdPanel(s) : '') +
+      (created ? '<section class="created created-simple" aria-labelledby="cr-t"><div class="created-main"><h2 id="cr-t">연수를 만들었습니다</h2>' +
+        '<p>지금부터 QR로 서명을 받을 수 있습니다. QR을 인쇄해 입구에 붙이거나 화면에 띄우세요.</p></div>' +
+        '<div class="created-cta"><button type="button" class="btn btn-primary" data-act="qr-print">QR 인쇄</button></div>' +
+        '<button type="button" class="icon-btn created-close" data-act="close-created" aria-label="안내 닫기">×</button></section>' : '') +
       '<div class="board"><aside class="sheet sheet-pad todo" id="todo" aria-live="polite"></aside>' +
       '<section class="sheet"><div class="table-tools"><div class="seg" role="group" aria-label="보기" id="seg"></div>' +
       '<label class="sr-only" for="tq">이름 검색</label><input id="tq" class="input" type="search" placeholder="이름 검색" autocomplete="off">' +
@@ -4358,20 +4377,13 @@ var qrcode = function() {
     updateBoard();
   }
 
-  function createdPanel(s) {
-    var url = Y.manageUrl(s.id, manageKey(s));
-    return '<section class="created" aria-labelledby="cr-t"><div class="created-main"><h2 id="cr-t">연수를 만들었습니다</h2>' +
-      '<p>지금부터 QR로 서명을 받을 수 있습니다. QR을 인쇄해 입구에 붙이세요.</p>' +
-      '<p><button type="button" class="btn btn-primary" data-act="qr-print">QR 인쇄</button></p></div>' +
-      '<div class="created-link"><label for="cr-link">이 연수의 관리 링크</label>' +
-      '<div class="linkbox"><input id="cr-link" class="input" readonly value="' + esc(url) + '"><button type="button" class="btn btn-secondary" data-copy="#cr-link">복사</button></div>' +
-      '<p class="help">다른 PC나 휴대폰에서 이 연수를 열 때 필요합니다. 업무 메신저의 ‘나에게 보내기’로 보내 두세요. 이 링크를 가진 사람은 이 연수를 관리할 수 있습니다.</p></div>' +
-      '<button type="button" class="icon-btn created-close" data-act="close-created" aria-label="안내 닫기">×</button></section>';
-  }
-
   function updateBoard() {
     if (!A.board || !app.querySelector('#tb')) return;
-    var M = boardModel();
+    var M = boardModel(), s = M.s;
+    app.querySelector('#meta').innerHTML = '<span><b>날짜</b>' + esc(whenText(s)) + '</span>' +
+      (s.place ? '<span><b>장소</b>' + esc(s.place) + '</span>' : '') +
+      (s.hours ? '<span><b>이수</b>' + esc(fmt.hours(s.hours)) + '</span>' : '') +
+      (s.manager ? '<span><b>담당</b>' + esc(s.manager) + '</span>' : '');
     var waiting = M.people.filter(function (p) { return !p.signed && !p.note; });
     var noted = M.people.filter(function (p) { return !p.signed && p.note; });
     var unsigned = waiting.length + noted.length;
@@ -4425,7 +4437,7 @@ var qrcode = function() {
       if (!p.signed && p.note) tags += '<span class="tag tag-note">' + esc(p.note) + '</span>';
       if (p.signed && p.method === '현장') tags += '<span class="tag">현장 서명</span>';
       if (p.extra) tags += '<span class="tag">직접 추가</span>';
-      return '<tr class="' + (p.signed ? '' : 'is-missing') + (A.board.fresh[p.id] ? ' just-signed' : '') + '">' +
+      return '<tr data-pid="' + esc(p.id) + '" class="' + (p.signed ? '' : 'is-missing') + (A.board.fresh[p.id] ? ' just-signed' : '') + '">' +
         '<td class="c num">' + p.no + '</td><td>' + esc(p.dept) + '</td><td class="nm">' + esc(p.name) + '</td>' +
         '<td class="sig">' + (p.signed ? (imgs[p.id] ? '<img alt="' + esc(p.name) + ' 서명" src="' + esc(imgs[p.id]) + '">' : '<span class="muted">불러오는 중</span>') : '<span class="muted">—</span>') + '</td>' +
         '<td>' + tags + '</td>' +
@@ -4435,39 +4447,76 @@ var qrcode = function() {
   }
 
   async function pollBoard() {
-    if (!A.board || document.hidden || A.polling || document.querySelector('.modal-backdrop') || document.querySelector('.row-menu')) return;
+    if (!A.board || document.hidden || A.polling || A.pending > 0 || document.querySelector('.modal-backdrop') || A.rowMenu) return;
     if (!app.querySelector('#tb')) { stop(); return; }
     A.polling = true;
+    var ver = A.ver, id = A.board.id;
     try {
-      var id = A.board.id;
       var s = await Api.call('sessions.get', { id: id });
-      if (!A.board || A.board.id !== id) return;
+      if (!A.board || A.board.id !== id || A.ver !== ver || A.pending > 0) return;   // 그 사이 바꾼 내용이 있으면 이번 결과는 버립니다
       var before = {};
       A.board.s.records.forEach(function (r) { if (r.signed) before[r.pid] = true; });
       await loadImages(id, s);
+      if (!A.board || A.board.id !== id || A.ver !== ver || A.pending > 0) return;
       s.records.forEach(function (r) { if (r.signed && !before[r.pid]) A.board.fresh[r.pid] = true; });
       var changed = JSON.stringify(s) !== JSON.stringify(A.board.s);
       A.board.s = s;
       if (changed) updateBoard();
     } catch (e) {
-      if (/^AUTH|NOT_FOUND/.test(e.code || '')) { stop(); if (e.code === 'NOT_FOUND') location.hash = '#admin'; else authFrame(e); }
+      if (/^AUTH/.test(e.code || '')) authFrame(e);
+      else if (e.code === 'NOT_FOUND') { stop(); location.hash = '#admin'; }
     } finally { A.polling = false; }
+  }
+
+  // 저장 요청은 한 줄로 세워 차례대로 보냅니다. (빠르게 여러 번 눌러도 순서가 지켜지고, 서버가 덜 붐빔)
+  function queued(send) {
+    var run = A.chain.then(function () { return send(); });
+    A.chain = run.catch(function () { /* 다음 요청은 계속 */ });
+    return run;
+  }
+
+  // 화면을 먼저 바꾸고, 저장은 뒤에서 합니다. 저장하지 못하면 서버 내용으로 되돌립니다.
+  function optimistic(change, send, okMsg) {
+    var id = A.board.id;
+    A.pending++; A.ver++;
+    change(A.board.s);
+    updateBoard();
+    if (okMsg) Y.toast(okMsg);
+    return queued(send).then(function (d) {
+      A.pending--;
+      if (A.board && A.board.id === id && d && d.people && A.pending === 0) {
+        A.ver++;
+        var same = JSON.stringify(d) === JSON.stringify(A.board.s);
+        A.board.s = d;
+        if (!same) updateBoard();   // 미리 바꾼 화면과 같으면 다시 그리지 않습니다 (누르려던 버튼이 사라지지 않게)
+      }
+    }).catch(function (e) {
+      A.pending--;
+      if (/^AUTH/.test(e.code || '')) { authFrame(e); return; }
+      Y.toast('저장하지 못해 되돌렸습니다. ' + (e.message || ''));
+      if (A.board && A.board.id === id) refreshBoard().catch(function () { /* 다음 새로고침에서 맞춰집니다 */ });
+    });
+  }
+
+  function recOf(s, pid) {
+    var r = s.records.filter(function (x) { return x.pid === pid; })[0];
+    if (!r) { r = { pid: pid, signed: false, method: '', note: '' }; s.records.push(r); }
+    return r;
   }
 
   async function refreshBoard() {
     var id = A.board.id;
-    A.board.s = await Api.call('sessions.get', { id: id });
-    await loadImages(id, A.board.s);
-    updateBoard();
+    A.ver++;
+    var s = await Api.call('sessions.get', { id: id });
+    await loadImages(id, s);
+    if (A.board && A.board.id === id && A.pending === 0) { A.ver++; A.board.s = s; updateBoard(); }
   }
 
   function personById(pid) { return boardModel().people.filter(function (p) { return p.id === pid; })[0]; }
 
   function onBoardClick(e) {
-    var cp = e.target.closest('[data-copy]');
-    if (cp) { copyFrom(app.querySelector(cp.getAttribute('data-copy'))); return; }
     var t = e.target.closest('[data-act], [data-filter]');
-    var menu = app.querySelector('.menu');
+    var menu = app.querySelector('.menu-wrap .menu');
     if (menu && !menu.hidden && !(t && t.getAttribute('data-act') === 'more')) toggleMenu(false);
     if (!t) return;
     if (t.hasAttribute('data-filter')) { A.board.filter = t.getAttribute('data-filter'); updateBoard(); return; }
@@ -4476,7 +4525,6 @@ var qrcode = function() {
     if (act === 'qr-show') return openStage(s);
     if (act === 'qr-print') return Y.printHtml(posterHtml(s));
     if (act === 'close-created') { A.created = null; var c = app.querySelector('.created'); if (c) c.remove(); return; }
-    if (act === 'copy-link') { copyLinkModal(s); return; }
     if (act === 'delete') return deleteSession(s);
     if (act === 'row-menu') return openRowMenu(t, personById(pid));
     if (act === 'onsite') return onsiteSign(personById(pid));
@@ -4485,29 +4533,11 @@ var qrcode = function() {
   }
 
   function toggleMenu(open) {
-    var menu = app.querySelector('.menu'), btn = app.querySelector('[data-act="more"]');
+    var menu = app.querySelector('.menu-wrap .menu'), btn = app.querySelector('[data-act="more"]');
     if (!menu) return;
     menu.hidden = !open;
     btn.setAttribute('aria-expanded', String(open));
     if (open) { var f = menu.querySelector('a, button'); if (f) f.focus(); }
-  }
-
-  function copyFrom(input) {
-    if (!input) return;
-    Y.copyText(input.value).then(function (ok) {
-      if (ok) Y.toast('복사했습니다.');
-      else { input.focus(); input.select(); Y.toast('자동 복사가 막혀 있습니다. 선택된 주소를 Ctrl+C로 복사해 주세요.'); }
-    });
-  }
-
-  function copyLinkModal(s) {
-    Y.modal({
-      title: '이 연수의 관리 링크',
-      html: '<p style="margin-bottom:12px">다른 PC나 휴대폰에서 이 연수를 열 때 씁니다. 함께 담당하는 선생님께만 보내 주세요. 링크를 가진 사람은 이 연수를 관리할 수 있습니다.</p>' +
-        '<div class="linkbox"><input id="ml" class="input" readonly value="' + esc(Y.manageUrl(s.id, manageKey(s))) + '"><button type="button" class="btn btn-secondary" data-mcopy>복사</button></div>',
-      onOpen: function (m) { m.el.querySelector('[data-mcopy]').addEventListener('click', function () { copyFrom(m.el.querySelector('#ml')); }); },
-      actions: [{ label: '닫기' }]
-    });
   }
 
   /* ---------- 줄마다 [관리] 메뉴 ---------- */
@@ -4517,7 +4547,7 @@ var qrcode = function() {
     var items = [];
     if (p.signed) items.push(['unsign', '서명 지우기']);
     else { items.push(['onsite', '현장 서명']); items.push(['note', p.note ? '불참 사유 고치기' : '불참 사유']); }
-    if (p.extra) items.push(['edit-person', '이름 고치기']);
+    items.push(['edit-person', '이름·교과 고치기']);
     items.push(['remove-person', '대상에서 빼기', true]);
     var m = document.createElement('div');
     m.className = 'menu row-menu';
@@ -4557,8 +4587,8 @@ var qrcode = function() {
     });
     if (!ok) return;
     await guard(async function () {
-      await Api.call('sessions.delete', { id: s.id });
-      Auth.drop('session', s.id);
+      stop();
+      await queued(function () { return Api.call('sessions.delete', { id: s.id }); });
       Y.toast('연수를 삭제했습니다.');
       location.hash = '#admin';
     });
@@ -4578,40 +4608,40 @@ var qrcode = function() {
       },
       onClose: function () { if (pad) pad.destroy(); },
       actions: [{ label: '취소' }, {
-        label: '서명 등록', kind: 'primary', busy: '등록 중…', onClick: async function () {
+        label: '서명 등록', kind: 'primary', onClick: function () {
           if (!pad.isEnough()) throw new Error('서명 칸에 이름을 써 주세요.');
           var sig = pad.export();
           if (!sig) throw new Error('서명을 읽지 못했습니다. 다시 써 주세요.');
-          await authAware(function () { return Api.call('sig.adminSign', { id: A.board.id, pid: p.id, sig: sig }); });
-          A.imgs[A.board.id][p.id] = sig;
-          A.board.fresh[p.id] = true;
-          await refreshBoard();
-          Y.toast(p.name + ' 선생님 서명을 등록했습니다.');
+          var id = A.board.id;
+          optimistic(function (s) {
+            var r = recOf(s, p.id); r.signed = true; r.method = '현장';
+            A.imgs[id][p.id] = sig; A.board.fresh[p.id] = true;
+          }, function () {
+            return Api.call('sig.adminSign', { id: id, pid: p.id, sig: sig });
+          }, p.name + ' 선생님 서명을 등록했습니다.');
         }
       }]
     });
   }
 
-  // 모달 안에서 권한 오류가 나면 모달을 닫고 안내 화면으로
-  async function authAware(fn) {
-    try { return await fn(); } catch (e) {
-      if (/^AUTH/.test(e.code || '')) { var b = document.querySelector('.modal-backdrop'); if (b) b.remove(); authFrame(e); }
-      throw e;
-    }
-  }
-
   function editNote(p) {
     if (!p) return;
     var preset = NOTE_CHOICES.indexOf(p.note) >= 0 ? p.note : (p.note ? '기타' : '');
+    function save(note) {
+      var id = A.board.id;
+      optimistic(function (s) { recOf(s, p.id).note = note; }, function () {
+        return Api.call('sig.note', { id: id, pid: p.id, note: note });
+      }, note ? '불참 사유를 저장했습니다.' : '불참 사유를 지웠습니다.');
+    }
     var acts = [{ label: '취소' }];
-    if (p.note) acts.push({ label: '사유 지우기', kind: 'secondary', busy: '지우는 중…', onClick: function () { return saveNote(p, ''); } });
+    if (p.note) acts.push({ label: '사유 지우기', kind: 'secondary', onClick: function () { save(''); } });
     acts.push({
-      label: '사유 저장', kind: 'primary', busy: '저장하는 중…', onClick: function (m) {
+      label: '사유 저장', kind: 'primary', onClick: function (m) {
         var c = m.el.querySelector('input[name="nc"]:checked');
         var txt = m.el.querySelector('#note-etc').value.trim();
         var note = c ? (c.value === '기타' ? (txt || '기타') : c.value) : txt;
         if (!note) throw new Error('사유를 골라 주세요.');
-        return saveNote(p, note);
+        save(note);
       }
     });
     Y.modal({
@@ -4629,21 +4659,14 @@ var qrcode = function() {
     });
   }
 
-  async function saveNote(p, note) {
-    await authAware(function () { return Api.call('sig.note', { id: A.board.id, pid: p.id, note: note }); });
-    await refreshBoard();
-    Y.toast(note ? '불참 사유를 저장했습니다.' : '불참 사유를 지웠습니다.');
-  }
-
   async function unsign(p) {
     var ok = await Y.confirmBox({ title: p.name + ' 선생님의 서명을 지울까요?', body: '지운 서명은 되돌릴 수 없습니다. QR이나 현장 서명으로 다시 받으면 됩니다.', ok: '서명 지우기', kind: 'danger' });
     if (!ok) return;
-    await guard(async function () {
-      await Api.call('sig.delete', { id: A.board.id, pid: p.id });
-      delete A.imgs[A.board.id][p.id];
-      await refreshBoard();
-      Y.toast('서명을 지웠습니다.');
-    });
+    var id = A.board.id;
+    optimistic(function (s) {
+      var r = recOf(s, p.id); r.signed = false; r.method = '';
+      delete A.imgs[id][p.id];
+    }, function () { return Api.call('sig.delete', { id: id, pid: p.id }); }, '서명을 지웠습니다.');
   }
 
   async function removePerson(p) {
@@ -4653,27 +4676,30 @@ var qrcode = function() {
       ok: '대상에서 빼기', kind: 'danger'
     });
     if (!ok) return;
-    await guard(async function () {
-      await Api.call('people.remove', { id: A.board.id, pid: p.id });
-      delete A.imgs[A.board.id][p.id];
-      await refreshBoard();
-      Y.toast(p.name + ' 선생님을 대상에서 뺐습니다.');
-    });
+    var id = A.board.id;
+    optimistic(function (s) {
+      s.people = s.people.filter(function (x) { return x.id !== p.id; });
+      s.people.forEach(function (x, i) { x.no = i + 1; });
+      s.records = s.records.filter(function (r) { return r.pid !== p.id; });
+      delete A.imgs[id][p.id];
+    }, function () { return Api.call('people.remove', { id: id, pid: p.id }); }, p.name + ' 선생님을 대상에서 뺐습니다.');
   }
 
   function editPerson(p) {
     Y.modal({
-      title: '이름 고치기',
-      html: '<p style="margin-bottom:14px">직접 추가한 사람만 고칠 수 있습니다. 학교 명단에 있는 선생님은 총괄 담당자가 교직원 명단에서 고칩니다.</p>' +
+      title: '이름·교과 고치기',
+      html: '<p style="margin-bottom:14px">이 연수의 등록부에만 적용됩니다. 교직원 명단과 다른 연수는 바뀌지 않습니다.</p>' +
         '<div class="row-2"><div class="field"><label for="ep-name">성명</label><input id="ep-name" class="input" maxlength="30" value="' + esc(p.name) + '"></div>' +
         '<div class="field"><label for="ep-dept">교과/업무</label><input id="ep-dept" class="input" maxlength="30" value="' + esc(p.dept) + '"></div></div>',
       actions: [{ label: '취소' }, {
-        label: '저장', kind: 'primary', busy: '저장하는 중…', onClick: async function (m) {
-          var name = m.el.querySelector('#ep-name').value.trim();
+        label: '저장', kind: 'primary', onClick: function (m) {
+          var name = m.el.querySelector('#ep-name').value.trim(), dept = m.el.querySelector('#ep-dept').value.trim();
           if (!name) throw new Error('성명을 입력해 주세요.');
-          await authAware(function () { return Api.call('people.edit', { id: A.board.id, pid: p.id, name: name, dept: m.el.querySelector('#ep-dept').value.trim() }); });
-          await refreshBoard();
-          Y.toast('고쳤습니다.');
+          if (name === p.name && dept === p.dept) return;
+          var id = A.board.id;
+          optimistic(function (s) {
+            s.people.forEach(function (x) { if (x.id === p.id) { x.name = name; x.dept = dept; } });
+          }, function () { return Api.call('people.edit', { id: id, pid: p.id, name: name, dept: dept }); }, '고쳤습니다.');
         }
       }]
     });
@@ -4681,8 +4707,9 @@ var qrcode = function() {
 
   async function addPeople() {
     var staff;
-    try { staff = await Api.call('staff.list', { id: A.board.id }); }
+    try { staff = await staffList(true); }
     catch (e) { if (/^AUTH/.test(e.code || '')) return authFrame(e); Y.toast(e.message); return; }
+    if (!A.board || !app.querySelector('#tb')) return;
     var inList = {};
     A.board.s.people.forEach(function (p) { inList[p.id] = true; });
     var pool = staff.filter(function (p) { return !inList[p.id]; });
@@ -4710,8 +4737,8 @@ var qrcode = function() {
         var q = m.el.querySelector('#ap-q'), list = m.el.querySelector('#ap-list');
         q.addEventListener('input', function () { list.innerHTML = listHtml(q.value); });
         list.addEventListener('change', function (e) {
-          var id = e.target.getAttribute('data-sid');
-          if (id) chosen[id] = e.target.checked;
+          var sid = e.target.getAttribute('data-sid');
+          if (sid) chosen[sid] = e.target.checked;
           var n = Object.keys(chosen).filter(function (k) { return chosen[k]; }).length;
           m.el.querySelector('#ap-count').textContent = n ? n + '명 골랐습니다.' : '';
         });
@@ -4721,9 +4748,15 @@ var qrcode = function() {
           var ids = Object.keys(chosen).filter(function (k) { return chosen[k]; });
           var name = m.el.querySelector('#ap-name').value.trim(), dept = m.el.querySelector('#ap-dept').value.trim();
           if (!ids.length && !name) throw new Error('추가할 선생님을 고르거나, 명단에 없는 사람의 성명을 입력해 주세요.');
-          var r = await authAware(function () { return Api.call('people.add', { id: A.board.id, staffIds: ids, extra: name ? { name: name, dept: dept } : null }); });
-          await refreshBoard();
-          Y.toast(r.added.length + '명을 추가했습니다. QR로 서명할 수 있습니다.');
+          var id = A.board.id, d;
+          A.pending++;
+          try { d = await queued(function () { return Api.call('people.add', { id: id, staffIds: ids, extra: name ? { name: name, dept: dept } : null }); }); }
+          catch (e) {
+            if (/^AUTH/.test(e.code || '')) { m.close(); authFrame(e); return false; }
+            throw e;
+          } finally { A.pending--; }
+          if (A.board && A.board.id === id) { A.ver++; A.board.s = d; updateBoard(); }
+          Y.toast(d.added.length + '명을 추가했습니다. QR로 서명할 수 있습니다.');
         }
       }]
     });
@@ -4777,10 +4810,12 @@ var qrcode = function() {
   async function showRoster(id) {
     loadingFrame('list');
     var s, imgs;
+    await A.chain;   // 방금 받은 현장 서명·사유가 등록부에 빠지지 않게
     try {
-      s = await Api.call('sessions.get', { id: id });
-      imgs = await Api.call('sig.images', { id: id });
+      var got = await Promise.all([Api.call('sessions.get', { id: id }), Api.call('sig.images', { id: id })]);
+      s = got[0]; imgs = got[1] || {};
     } catch (e) { return errorFrame(e, function () { showRoster(id); }, 'list'); }
+    if (location.hash !== '#admin-roster-' + id) return;
     var opts = Y.store.getJSON('yeonsu-roster-opts', { showNotes: true, showInfo: false });
     var recs = {};
     s.records.forEach(function (r) { recs[r.pid] = r; });
@@ -4806,83 +4841,101 @@ var qrcode = function() {
   }
 
   /* ================================================================ */
-  /* 총괄: 링크 관리                                                     */
+  /* 총괄: 링크 관리 (바로가기 파일)                                      */
   /* ================================================================ */
+  var LINK_INFO = {
+    staff: {
+      title: '연수 담당자 바로가기', file: '연수 담당자 바로가기.html', label: '연수 담당자',
+      desc: '교직원 메신저 공지에 바로가기 파일과 링크를 함께 올려 두세요. 누르면 이름을 골라 자기 연수를 만들고 관리합니다. 학생·학부모가 보는 곳에는 올리지 마세요.',
+      warn: '새 열쇠로 바꾸면 지금 바로가기 파일과 링크는 바로 막히고, 새 파일을 다시 나눠 줘야 합니다.'
+    },
+    master: {
+      title: '총괄 바로가기', file: '연수 총괄 바로가기.html', label: '연수 총괄',
+      desc: '선생님만 갖고 계세요. 모든 연수, 교직원 명단, 이 화면을 관리합니다. 잃어버려도 구글 시트 ‘설정’ 시트에서 찾을 수 있습니다.',
+      warn: '인수인계할 때는 후임자가 새 열쇠로 바꾸면 이전 총괄 바로가기가 막힙니다.'
+    }
+  };
+
   async function showLinks() {
-    if (!isMaster()) return authFrame({ code: 'AUTH_MASTER', message: '총괄 링크로 열어야 하는 화면입니다.' });
+    if (!isMaster()) return authFrame({ code: 'AUTH_MASTER_UI', message: '총괄 바로가기로 열어야 하는 화면입니다.' });
     loadingFrame('links');
     var L;
     try { L = await Api.call('links.get', { site: Y.siteBase() }); } catch (e) { return errorFrame(e, showLinks, 'links'); }
+    function urlOf(kind) { return kind === 'master' ? Y.masterUrl(L.master) : Y.staffUrl(L.staff); }
     function render() {
       frame('<div class="a-pagehead"><div class="grow"><h1 class="a-h1 doc">링크 관리</h1>' +
-        '<p class="a-sub">비밀번호 대신 링크로 권한을 나눕니다. 링크를 새로 만들면 이전 링크는 바로 막힙니다.</p></div></div>' +
-        linkSection('create', '연수 만들기 링크', Y.createUrl(L.create),
-          '업무 메신저 공지에 올려 두세요. 이 링크로 누구나 연수를 만들 수 있고, 만든 사람은 자기 연수만 관리합니다. 다른 사람의 연수나 서명은 볼 수 없습니다.',
-          '새 링크로 바꾸면 메신저 공지의 링크도 바꿔야 합니다. 이미 만든 연수의 관리 링크는 그대로 작동합니다.') +
-        linkSection('master', '총괄 링크', Y.masterUrl(L.master),
-          '선생님만 갖고 계세요. 모든 연수, 교직원 명단, 이 화면을 관리합니다. 잃어버리면 구글 시트 ‘설정’ 시트에서 찾을 수 있습니다.',
-          '인수인계할 때 후임자가 새 링크로 바꾸면 이전 총괄 링크는 막힙니다.') +
-        '<section class="sheet sheet-pad" style="margin-top:20px"><h2 class="sheet-title">이 컴퓨터</h2>' +
-        '<p class="a-sub" style="margin:4px 0 12px">공용 PC에서 총괄 화면을 열었다면 다 쓰고 지워 두세요.</p>' +
-        '<button type="button" class="btn btn-secondary btn-small" data-act="forget-master">이 컴퓨터에서 총괄 기억 지우기</button></section>', 'links');
-      app.querySelector('.a-main').addEventListener('click', async function (e) {
-        var cp = e.target.closest('[data-copy]');
-        if (cp) return copyFrom(app.querySelector(cp.getAttribute('data-copy')));
-        var t = e.target.closest('[data-act]');
-        if (!t) return;
-        var act = t.getAttribute('data-act');
-        if (act === 'forget-master') {
-          Auth.forget('master');
-          Y.toast('이 컴퓨터에서 지웠습니다. 이 창을 닫으면 다시 총괄 링크로 열어야 합니다.');
-          return;
-        }
-        if (act === 'rotate-create' || act === 'rotate-master') {
-          var which = act === 'rotate-master' ? 'master' : 'create';
-          var ok = await Y.confirmBox({
-            title: (which === 'master' ? '총괄 링크' : '연수 만들기 링크') + '를 새로 만들까요?',
-            body: which === 'master' ? '지금 총괄 링크는 바로 막힙니다. 이 컴퓨터는 새 링크를 자동으로 기억합니다.'
-              : '지금 연수 만들기 링크는 바로 막힙니다. 메신저 공지의 링크를 새 링크로 바꿔 주세요.',
-            ok: '새로 만들기', kind: 'danger'
-          });
-          if (!ok) return;
-          await guard(async function () {
-            L = await Api.call('links.rotate', { which: which });
-            if (which === 'master') Auth.setMaster(L.master);
-            render();
-            Y.toast('새 링크를 만들었습니다.');
-          });
-        }
-      });
+        '<p class="a-sub">비밀번호 대신 바로가기로 권한을 나눕니다. 바로가기 파일에는 주소 한 줄만 들어 있어서, 프로그램을 고쳐도 다시 나눠 줄 필요가 없습니다.</p></div></div>' +
+        linkSection('staff', urlOf('staff')) + linkSection('master', urlOf('master')), 'links');
     }
     render();
+    // 화면을 다시 그려도 main은 그대로 두고 이벤트는 한 번만 답니다.
+    app.querySelector('.a-main').addEventListener('click', async function onLinks(e) {
+      var cp = e.target.closest('[data-copy]');
+      if (cp) return copyFrom(app.querySelector(cp.getAttribute('data-copy')));
+      var dl = e.target.closest('[data-download]');
+      if (dl) {
+        var kind = dl.getAttribute('data-download'), info = LINK_INFO[kind];
+        if (!Y.downloadShortcut(info.file, urlOf(kind), info.label)) Y.toast('파일을 만들지 못했습니다. 링크를 복사해 쓰세요.');
+        return;
+      }
+      var t = e.target.closest('[data-rotate]');
+      if (!t) return;
+      var which = t.getAttribute('data-rotate');
+      var ok = await Y.confirmBox({
+        title: LINK_INFO[which].label + ' 열쇠를 새로 바꿀까요?',
+        body: which === 'master' ? '지금 총괄 바로가기는 바로 막힙니다. 이 창은 새 열쇠로 계속 쓸 수 있으니, 새 바로가기 파일을 내려받아 두세요.'
+          : '지금 담당자 바로가기 파일과 링크는 바로 막힙니다. 새 파일을 내려받아 메신저 공지를 바꿔 주세요.',
+        ok: '새 열쇠로 바꾸기', kind: 'danger'
+      });
+      if (!ok) return;
+      await guard(async function () {
+        L = await Api.call('links.rotate', { which: which });
+        if (which === 'master') Auth.set('master', L.master);
+        var input = app.querySelector('#lk-' + which);
+        if (input) input.value = urlOf(which);
+        Y.toast('새 열쇠로 바꿨습니다. 새 바로가기 파일을 내려받아 주세요.');
+      });
+    });
   }
 
-  function linkSection(kind, title, url, desc, warn) {
-    return '<section class="sheet sheet-pad" style="margin-top:20px"><h2 class="sheet-title">' + title + '</h2>' +
-      '<p class="a-sub" style="margin:4px 0 12px">' + desc + '</p>' +
-      '<div class="linkbox"><input id="lk-' + kind + '" class="input" readonly value="' + esc(url) + '" aria-label="' + title + '">' +
-      '<button type="button" class="btn btn-secondary" data-copy="#lk-' + kind + '">복사</button></div>' +
-      '<p class="help" style="margin-top:12px">' + warn + ' <button type="button" class="btn btn-quiet btn-small" data-act="rotate-' + kind + '">새 링크로 바꾸기</button></p></section>';
+  function linkSection(kind, url) {
+    var info = LINK_INFO[kind];
+    return '<section class="sheet sheet-pad links-sec" style="margin-top:20px" data-kind="' + kind + '"><h2 class="sheet-title">' + info.title + '</h2>' +
+      '<p class="a-sub" style="margin:4px 0 12px">' + info.desc + '</p>' +
+      '<div class="linkbox"><input id="lk-' + kind + '" class="input" readonly value="' + esc(url) + '" aria-label="' + info.title + ' 링크">' +
+      '<button type="button" class="btn btn-secondary" data-copy="#lk-' + kind + '">링크 복사</button>' +
+      '<button type="button" class="btn btn-primary" data-download="' + kind + '">바로가기 파일 내려받기</button></div>' +
+      '<p class="help" style="margin-top:12px">파일 이름: ' + esc(info.file) + '. ' + info.warn +
+      ' <button type="button" class="btn btn-quiet btn-small" data-rotate="' + kind + '">새 열쇠로 바꾸기</button></p></section>';
   }
 
-  /* ---------- 총괄 열쇠 직접 넣기 (처음 설치할 때, 링크를 잃어버렸을 때) ---------- */
+  function copyFrom(input) {
+    if (!input) return;
+    Y.copyText(input.value).then(function (ok) {
+      if (ok) Y.toast('복사했습니다.');
+      else { input.focus(); input.select(); Y.toast('자동 복사가 막혀 있습니다. 선택된 주소를 Ctrl+C로 복사해 주세요.'); }
+    });
+  }
+
+  /* ---------- 총괄 열쇠 직접 넣기 (처음 설치할 때, 바로가기를 잃어버렸을 때) ---------- */
   function showMasterKey() {
-    frame('<div class="sheet sheet-pad" style="max-width:560px"><h1 class="a-h1 doc">총괄 열쇠로 들어가기</h1>' +
-      '<p class="a-sub" style="margin:6px 0 18px">구글 시트의 ‘설정’ 시트에 있는 <b>총괄 열쇠</b> 값을 붙여넣으세요. 이 컴퓨터가 총괄용으로 기억됩니다.</p>' +
+    simple('<h1 class="a-h1 doc">총괄 열쇠로 들어가기</h1>' +
+      '<p class="a-sub" style="margin:6px 0 18px">구글 시트의 ‘설정’ 시트에 있는 <b>총괄 열쇠</b> 값을 붙여넣으세요.</p>' +
       '<form novalidate class="form-grid"><div class="field"><label for="mk">총괄 열쇠</label><input id="mk" class="input" autocomplete="off" spellcheck="false"></div>' +
       '<p class="form-error" role="alert" hidden></p><div class="form-foot"><button class="btn btn-primary" data-busy="확인 중…">들어가기</button>' +
-      '<a class="btn btn-quiet" href="#admin">취소</a></div></form></div>', 'list');
+      '<a class="btn btn-quiet" href="#admin">취소</a></div></form>');
     var form = app.querySelector('form'), err = form.querySelector('.form-error'), btn = form.querySelector('.btn-primary');
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
+      if (btn.classList.contains('is-busy')) return;
       var k = app.querySelector('#mk').value.trim().replace(/^.*#master-/, '');
       if (!k) { err.textContent = '총괄 열쇠를 붙여넣어 주세요.'; err.hidden = false; return; }
       btn.classList.add('is-busy');
       try {
-        var r = await Api.call('auth.check', { master: k, create: '' });
+        var r = await Api.call('auth.check', { master: k, staff: '' });
         if (!r.master) throw new Error('맞지 않는 열쇠입니다. 설정 시트의 총괄 열쇠를 다시 복사해 주세요.');
-        Auth.setMaster(k);
-        A.notice = { kind: 'master', route: 'admin' };
+        Auth.set('master', k);
+        Auth.set('staff', '');
         location.hash = '#admin';
       } catch (ex) {
         btn.classList.remove('is-busy');
@@ -4896,12 +4949,12 @@ var qrcode = function() {
   /* 총괄: 교직원 명단                                                   */
   /* ================================================================ */
   async function showStaff() {
-    if (!isMaster()) return authFrame({ code: 'AUTH_MASTER', message: '교직원 명단은 총괄 링크로만 고칠 수 있습니다. 내 연수의 대상자는 연수 현황 화면에서 더하거나 뺄 수 있습니다.' });
+    if (!isMaster()) return authFrame({ code: 'AUTH_MASTER_UI', message: '교직원 명단은 총괄 바로가기로만 고칠 수 있습니다. 내 연수의 대상자는 연수 현황 화면에서 더하거나 빼고 고칠 수 있습니다.' });
     loadingFrame('staff');
-    try { A.staff = await Api.call('staff.list'); } catch (e) { return errorFrame(e, showStaff, 'staff'); }
+    try { A.staff = (await staffList(true)).map(function (p) { return Object.assign({}, p); }); } catch (e) { return errorFrame(e, showStaff, 'staff'); }
     A.staffDirty = false;
     frame('<div class="a-pagehead"><div class="grow"><h1 class="a-h1 doc">교직원 명단</h1>' +
-      '<p class="a-sub">새 연수를 만들 때 이 명단에서 대상자를 불러옵니다. 명단을 바꿔도 이미 만든 연수의 대상자와 등록부는 그대로입니다.</p></div>' +
+      '<p class="a-sub">새 연수를 만들 때 이 명단에서 대상자를 불러오고, 연수 담당자도 이 명단에서 이름을 고릅니다. 명단을 바꿔도 이미 만든 연수의 대상자와 등록부는 그대로입니다.</p></div>' +
       '<div class="a-actions"><button type="button" class="btn btn-secondary" data-act="paste">엑셀에서 붙여넣기</button>' +
       '<button type="button" class="btn btn-secondary" data-act="add">한 명 추가</button>' +
       '<button type="button" class="btn btn-primary" data-act="save" data-busy="저장하는 중…" aria-disabled="true">변경 내용 저장</button></div></div>' +
@@ -4974,7 +5027,7 @@ var qrcode = function() {
     Y.modal({
       title: '엑셀에서 붙여넣기', wide: true,
       html: '<p style="margin-bottom:12px">엑셀이나 한글 표에서 <b>교과/업무</b>와 <b>성명</b> 두 열을 복사해 아래에 붙여넣으세요. 한 줄에 한 명씩 들어갑니다.</p>' +
-        '<textarea id="paste-box" class="input" placeholder="국어&#9;강수진&#10;국어&#9;심진아&#10;…"></textarea>' +
+        '<textarea id="paste-box" class="input" placeholder="국어&#9;홍길동&#10;수학&#9;김철수&#10;…"></textarea>' +
         '<p class="help" id="paste-count" style="margin-top:6px"></p>' +
         '<div class="radio-line" style="margin-top:12px"><label><input type="radio" name="pm" value="replace" checked> 지금 명단을 모두 바꾸기</label>' +
         '<label><input type="radio" name="pm" value="append"> 아래에 이어 붙이기</label></div>',
@@ -5007,7 +5060,9 @@ var qrcode = function() {
     if (empty && !(await Y.confirmBox({ title: '성명이 빈 줄이 ' + empty + '개 있습니다', body: '성명이 빈 줄은 빼고 저장합니다.', ok: '빼고 저장' }))) return;
     btn.classList.add('is-busy');
     await guard(async function () {
-      A.staff = await Api.call('staff.save', { list: A.staff });
+      var saved = await Api.call('staff.save', { list: A.staff });
+      A.staffList = saved;
+      A.staff = saved.map(function (p) { return Object.assign({}, p); });
       dirty(false); renderStaff();
       Y.toast('명단을 저장했습니다.');
     });
@@ -5016,20 +5071,21 @@ var qrcode = function() {
 
   /* ---------- 문서 전체 이벤트 ---------- */
   document.addEventListener('click', function (e) {
-    var menu = app && app.querySelector('.menu:not(.row-menu)');
+    var menu = app && app.querySelector('.menu-wrap .menu');
     if (menu && !menu.hidden && !e.target.closest('.menu-wrap')) toggleMenu(false);
     if (A.rowMenu && !e.target.closest('.row-menu') && e.target !== A.rowMenu.btn) closeRowMenu();
   });
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
-    var menu = app && app.querySelector('.menu:not(.row-menu)');
+    var menu = app && app.querySelector('.menu-wrap .menu');
     if (menu && !menu.hidden) { toggleMenu(false); var b = app.querySelector('[data-act="more"]'); if (b) b.focus(); }
     if (A.rowMenu) { var rb = A.rowMenu.btn; closeRowMenu(); if (rb && rb.focus) rb.focus(); }
   });
   window.addEventListener('scroll', closeRowMenu, true);
   window.addEventListener('resize', closeRowMenu);
   global.addEventListener('beforeunload', function (e) {
-    if (A.staffDirty && document.body.className === 'is-admin' && app && app.querySelector('#stb')) { e.preventDefault(); e.returnValue = ''; }
+    var unsaved = A.staffDirty && document.body.className === 'is-admin' && app && app.querySelector('#stb');
+    if (unsaved || A.pending > 0) { e.preventDefault(); e.returnValue = ''; }   // 저장 중에 창을 닫으려 하면 한 번 묻습니다
   });
 
   global.Admin = { mount: mount, enter: enter, stop: stop };
@@ -5041,7 +5097,7 @@ var qrcode = function() {
   var root = document.getElementById('app');
   function route() {
     var h = location.hash.replace(/^#/, '');
-    if (/^(master-|new-|m-)/.test(h)) window.Admin.enter(root, h);
+    if (/^(master-|staff-|new-|m-)/.test(h)) window.Admin.enter(root, h);
     else if (h.indexOf('admin') === 0) window.Admin.mount(root, h);
     else { window.Admin.stop(); window.Teacher.mount(root, h); }
     window.scrollTo(0, 0);
